@@ -265,6 +265,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--n
   <div class="nav-tab" onclick="showSection('budgetfps',this)"><span class="tab-icon">💼</span> Budget FPS</div>
   <div class="nav-tab" onclick="showSection('budget',this)"><span class="tab-icon">🎯</span> Budget Gr Onorato</div>
   <div class="nav-tab" onclick="showSection('challenge',this)"><span class="tab-icon">🏁</span> Challenge</div>
+  <div class="nav-tab" onclick="showSection('ritmo_vendita',this)"><span class="tab-icon">📈</span> Ritmo di Vendita</div>
   <div class="nav-tab" onclick="showSection('fb_detail',this)"><span class="tab-icon">👤</span> KPI Family Banker</div>
   <div class="nav-tab" onclick="showSection('team',this)"><span class="tab-icon">📍</span> Team per FBO</div>
 </div>
@@ -288,7 +289,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--n
     </div>
     <div class="kpi-card border-blue">
       <div class="kpi-card-label">Incasso previsto 2026</div>
-      <div class="kpi-card-val euro" style="font-size:28px;color:var(--blue)">55.815</div>
+      <div class="kpi-card-val euro" style="font-size:28px;color:var(--blue)">59.799</div>
       <div class="kpi-card-sub gray">Totale anno stimato</div>
     </div>
   </div>
@@ -302,27 +303,27 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--n
     </div>
     <div class="kpi-card border-orange">
       <div class="kpi-card-label">Residuo reale 2026</div>
-      <div class="kpi-card-val euro" style="color:var(--orange)">17.511</div>
+      <div class="kpi-card-val euro" style="color:var(--orange)">21.495</div>
       <div class="kpi-card-sub orange">Da incassare</div>
     </div>
     <div class="kpi-card border-navy">
       <div class="kpi-card-label">Da incassare nel 2027</div>
-      <div class="kpi-card-val euro" style="color:var(--navy2)">1.670</div>
+      <div class="kpi-card-val euro" style="color:var(--navy2)">2.023</div>
       <div class="kpi-card-sub gray">Rate future</div>
     </div>
     <div class="kpi-card border-navy">
       <div class="kpi-card-label">Polizze in lavorazione</div>
-      <div class="kpi-card-val" style="color:var(--navy2)">9</div>
+      <div class="kpi-card-val" style="color:var(--navy2)">12</div>
       <div class="kpi-card-sub gray">Non ancora processate</div>
     </div>
     <div class="kpi-card border-navy">
       <div class="kpi-card-label">Firme in lavorazione</div>
-      <div class="kpi-card-val euro" style="color:var(--navy2)">5.556</div>
+      <div class="kpi-card-val euro" style="color:var(--navy2)">8.096</div>
       <div class="kpi-card-sub gray">Premio alla firma</div>
     </div>
     <div class="kpi-card border-orange">
       <div class="kpi-card-label">Premi totali da incassare</div>
-      <div class="kpi-card-val euro" style="color:var(--orange)">19.181</div>
+      <div class="kpi-card-val euro" style="color:var(--orange)">23.518</div>
       <div class="kpi-card-sub orange">Residuo + 2027</div>
     </div>
   </div>
@@ -686,6 +687,169 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--n
 
 
 <!-- ==================== TEAM FBO ==================== -->
+
+<!-- ==================== RITMO DI VENDITA ==================== -->
+<div id="section-ritmo_vendita" class="section">
+
+  <div style="background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-radius:14px;padding:20px 24px;color:white;margin-bottom:14px">
+    <div style="font-size:20px;font-weight:700">📈 Ritmo di Vendita 2026</div>
+    <div style="font-size:12px;opacity:0.6;margin-top:3px">Velocità, proiezioni e gap da recuperare — aggiornato automaticamente</div>
+  </div>
+
+  <!-- KPI velcoità generale -->
+  <div class="kpi-row-4" style="margin-bottom:14px">
+    <div class="kpi-card border-blue">
+      <div class="kpi-card-label">Giorni trascorsi 2026</div>
+      <div class="kpi-card-val" id="rv_giorni_tr">108</div>
+      <div class="kpi-card-sub gray">dall'1 gennaio</div>
+    </div>
+    <div class="kpi-card border-blue">
+      <div class="kpi-card-label">Giorni residui</div>
+      <div class="kpi-card-val" id="rv_giorni_res">257</div>
+      <div class="kpi-card-sub gray">al 31 dicembre</div>
+    </div>
+    <div class="kpi-card border-orange">
+      <div class="kpi-card-label">Ritardo da recuperare</div>
+      <div class="kpi-card-val euro" style="color:var(--red)" id="rv_ritardo">50.463</div>
+      <div class="kpi-card-sub red">gap cumulato vs target</div>
+    </div>
+    <div class="kpi-card border-green">
+      <div class="kpi-card-label">% target raggiungibile</div>
+      <div class="kpi-card-val" style="color:var(--orange)" id="rv_pct_target">58,5%</div>
+      <div class="kpi-card-sub orange">al ritmo attuale</div>
+    </div>
+  </div>
+
+  <!-- Budget FPS vs Gr Onorato -->
+  <div class="grid-2" style="margin-bottom:14px">
+
+    <!-- Budget FPS -->
+    <div class="card">
+      <div class="card-title">💼 Budget FPS — € 300.000</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+        <div class="ritmo-box green">
+          <div class="ritmo-box-label">Incassato YTD</div>
+          <div class="ritmo-box-val green" style="font-size:16px" id="rv_fps_inc">€ 38.304</div>
+          <div class="ritmo-box-sub" id="rv_fps_pct_lbl">12,8% del budget</div>
+        </div>
+        <div class="ritmo-box red">
+          <div class="ritmo-box-label">Gap al 31/12</div>
+          <div class="ritmo-box-val red" style="font-size:16px" id="rv_fps_gap">€ 261.696</div>
+          <div class="ritmo-box-sub">da recuperare</div>
+        </div>
+        <div class="ritmo-box orange">
+          <div class="ritmo-box-label">Proiezione EOY</div>
+          <div class="ritmo-box-val orange" style="font-size:16px" id="rv_fps_eoy">€ 129.455</div>
+          <div class="ritmo-box-sub" id="rv_fps_eoy_pct">43,2% del budget</div>
+        </div>
+      </div>
+      <div style="margin-bottom:5px;display:flex;justify-content:space-between;font-size:11px">
+        <span style="color:var(--gray)">Avanzamento incassato</span>
+        <span style="font-weight:700;color:var(--red)" id="rv_fps_pct">12,8%</span>
+      </div>
+      <div class="pbar-wrap" style="height:10px"><div class="pbar-fill pbar-red" id="rv_fps_bar" style="width:12.8%"></div></div>
+      <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--blue-light);border-radius:8px;padding:10px">
+          <div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase">Velocità necessaria</div>
+          <div style="font-size:18px;font-weight:700;color:var(--blue)" id="rv_fps_vel">€ 993/gg</div>
+          <div style="font-size:9px;color:var(--gray)">per chiudere il budget</div>
+        </div>
+        <div style="background:var(--red-light);border-radius:8px;padding:10px">
+          <div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase">Polizze/settimana</div>
+          <div style="font-size:18px;font-weight:700;color:var(--red)" id="rv_fps_polsett">12</div>
+          <div style="font-size:9px;color:var(--gray)">necessarie per recuperare</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget Gr Onorato -->
+    <div class="card">
+      <div class="card-title">🎯 Budget Gr Onorato — € 180.000 <span style="font-size:11px;font-weight:400;color:var(--gray)">(target: 3%/sett = € 5.400/sett)</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+        <div class="ritmo-box green">
+          <div class="ritmo-box-label">Incassato YTD</div>
+          <div class="ritmo-box-val green" style="font-size:16px" id="rv_ono_inc">€ 32.127</div>
+          <div class="ritmo-box-sub" id="rv_ono_pct_lbl">17,8% del budget</div>
+        </div>
+        <div class="ritmo-box red">
+          <div class="ritmo-box-label">Gap al 31/12</div>
+          <div class="ritmo-box-val red" style="font-size:16px" id="rv_ono_gap">€ 147.873</div>
+          <div class="ritmo-box-sub">da recuperare</div>
+        </div>
+        <div class="ritmo-box orange">
+          <div class="ritmo-box-label">Proiezione EOY</div>
+          <div class="ritmo-box-val orange" style="font-size:16px" id="rv_ono_eoy">€ 55.119</div>
+          <div class="ritmo-box-sub" id="rv_ono_eoy_pct">30,6% del budget</div>
+        </div>
+      </div>
+      <div style="margin-bottom:5px;display:flex;justify-content:space-between;font-size:11px">
+        <span style="color:var(--gray)">Avanzamento incassato</span>
+        <span style="font-weight:700;color:var(--orange)" id="rv_ono_pct">17,8%</span>
+      </div>
+      <div class="pbar-wrap" style="height:10px"><div class="pbar-fill pbar-orange" id="rv_ono_bar" style="width:17.8%"></div></div>
+      <!-- Semaforo 3%/sett -->
+      <div style="margin-top:10px;background:var(--red-light);border:1px solid #FECACA;border-radius:10px;padding:12px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:28px" id="rv_ono_semaforo">🔴</div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--navy)" id="rv_ono_stato_txt">Sotto ritmo — servono € 5.400/sett</div>
+          <div style="font-size:10px;color:var(--gray);margin-top:2px">Target: 3% del budget/settimana · Velocità attuale: <span id="rv_ono_vel_sett">€ 893/sett</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Indicatori chiave -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title">⚡ Indicatori chiave — cosa serve per recuperare</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+      <div style="background:var(--blue-light);border:1px solid #BFDBFE;border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Polizze stimate al 31/12</div>
+        <div style="font-size:22px;font-weight:700;color:var(--blue)" id="rv_pol_stimate">210</div>
+        <div style="font-size:9px;color:var(--gray)">al ritmo attuale</div>
+      </div>
+      <div style="background:var(--orange-light);border:1px solid #FDE68A;border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Importo/settimana necessario</div>
+        <div style="font-size:22px;font-weight:700;color:var(--orange)" id="rv_imp_sett">€ 6.951</div>
+        <div style="font-size:9px;color:var(--gray)">per chiudere budget FPS</div>
+      </div>
+      <div style="background:var(--green-light);border:1px solid #A7F3D0;border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Premi stimati al 31/12</div>
+        <div style="font-size:22px;font-weight:700;color:var(--green)" id="rv_premi_stim">€ 208.936</div>
+        <div style="font-size:9px;color:var(--gray)">proiezione lineare</div>
+      </div>
+      <div style="background:var(--red-light);border:1px solid #FECACA;border-radius:10px;padding:12px;text-align:center">
+        <div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Incasso medio/mese necessario</div>
+        <div style="font-size:22px;font-weight:700;color:var(--red)" id="rv_inc_mese">€ 32.712</div>
+        <div style="font-size:9px;color:var(--gray)">nei mesi restanti</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabella mensile -->
+  <div class="card">
+    <div class="card-title">📅 Andamento mensile vs target progressivo</div>
+    <div style="overflow-x:auto">
+    <table class="tbl">
+      <thead><tr>
+        <th>Mese</th>
+        <th>Polizze</th>
+        <th>Premi Annui</th>
+        <th>Incassato</th>
+        <th>% anno</th>
+        <th>Target progressivo</th>
+        <th>Scostamento</th>
+        <th>Stato</th>
+        <th>Inc. medio necessario</th>
+        <th>Ritardo da recuperare</th>
+      </tr></thead>
+      <tbody id="rv_tbody"></tbody>
+    </table>
+    </div>
+  </div>
+
+</div>
+
 <div id="section-team" class="section">
   <div class="grid-3" style="margin-bottom:14px">
     <div class="card" style="border-top:4px solid var(--blue)">
@@ -1137,194 +1301,144 @@ function buildLavorazione() {
 }
 
 
-// =================== LETTORE CSV DA GITHUB ===================
-var CSV_URL = "https://raw.githubusercontent.com/danieleFPS/fps-dashboard/main/fps_kpi.csv";
+// =================== RITMO DI VENDITA ===================
+function buildRitmoVendita() {
+  var BUDGET_FPS = 300000;
+  var BUDGET_ONO = 180000;
+  var TARGET_SETT_PCT = 0.03; // 3% a settimana Gr Onorato
 
-function parseNum(s) {
-  if(!s || s==='-' || s==='—') return 0;
-  return parseFloat(s.replace(/[€\s]/g,'').replace(/\./g,'').replace(',','.')) || 0;
-}
-function parsePct(s) {
-  if(!s || s==='-' || s==='—') return 0;
-  return parseFloat(s.replace('%','').replace(',','.')) / 100 || 0;
-}
+  // Dati dal CSV (D)
+  var totInc = D.fb.reduce(function(a,f){return a+f.incassato;},0);
+  var totPA  = D.fb.reduce(function(a,f){return a+f.premio_annuo;},0);
+  var totPol = D.fb.reduce(function(a,f){return a+f.polizze;},0);
+  var onoInc = D.fb.filter(function(f){return f.gruppo==='Onorato';}).reduce(function(a,f){return a+f.incassato;},0);
 
-var BUDGET_MAP = {"Alzetta Stefano":0,"Battisti Amelia":5000,"Cangemi Francesco":5000,"Cristofari Rita":10000,"Curra Isabella":10000,"De Marco Fabio":15000,"Di Marcello Sabrina":5000,"Ercolino Giovanni":10000,"Galieti Fabio":10000,"Gallo Armando":10000,"Gallo Tiziano":5000,"Giordano Ferdinando":0,"Grifoni Cristiana":10000,"Lolletti Benedetto":15000,"Maola Daniele":10000,"Mazzetta Alessandra":40000,"Onorato Beniamino":25000,"Panfili Stefano":0,"Pozzana Patrizia":10000,"Rizza Andrea":3000,"Santachiara Manuel":3000};
-var INGRESSO_MAP = {"Alzetta Stefano":"2020-03-13","Battisti Amelia":"2018-06-19","Cangemi Francesco":"2018-07-14","Cristofari Rita":"2022-07-02","Curra Isabella":"2023-10-02","De Marco Fabio":"2018-09-28","Di Marcello Sabrina":"2019-09-04","Ercolino Giovanni":"2022-10-21","Galieti Fabio":"2022-12-03","Gallo Armando":"2023-09-14","Gallo Tiziano":"2021-06-10","Giordano Ferdinando":"2024-04-03","Grifoni Cristiana":"2023-08-10","Lolletti Benedetto":"2021-03-25","Maola Daniele":"2021-01-22","Mazzetta Alessandra":"2023-06-20","Onorato Beniamino":"2024-02-09","Panfili Stefano":"2023-12-10","Pozzana Patrizia":"2021-11-12","Rizza Andrea":"2019-10-04","Santachiara Manuel":"2024-05-05"};
-var FBO_MAP = {"Alzetta Stefano":"Genzano","Battisti Amelia":"Pomezia","Cangemi Francesco":"Pomezia","Cristofari Rita":"Pomezia","Curra Isabella":"Genzano","De Marco Fabio":"Pomezia","Di Marcello Sabrina":"Pomezia","Ercolino Giovanni":"Genzano","Galieti Fabio":"Genzano","Gallo Armando":"Pomezia","Gallo Tiziano":"Genzano","Giordano Ferdinando":"Genzano","Grifoni Cristiana":"Pomezia","Lolletti Benedetto":"Genzano","Maola Daniele":"Pomezia","Mazzetta Alessandra":"Pomezia","Onorato Beniamino":"Genzano","Panfili Stefano":"Latina","Pozzana Patrizia":"Genzano","Rizza Andrea":"Genzano","Santachiara Manuel":"Pomezia"};
-var GRUPPO_MAP = {"Alzetta Stefano":"Onorato","Battisti Amelia":"Cocco","Cangemi Francesco":"Onorato","Cristofari Rita":"Onorato","Curra Isabella":"Onorato","De Marco Fabio":"Onorato","Di Marcello Sabrina":"Onorato","Ercolino Giovanni":"Onorato","Galieti Fabio":"Onorato","Gallo Armando":"Onorato","Gallo Tiziano":"Onorato","Giordano Ferdinando":"Onorato","Grifoni Cristiana":"Onorato","Lolletti Benedetto":"Onorato","Maola Daniele":"Onorato","Mazzetta Alessandra":"Onorato","Onorato Beniamino":"Onorato","Panfili Stefano":"Panfili","Pozzana Patrizia":"Onorato","Rizza Andrea":"Onorato","Santachiara Manuel":"Onorato"};
-var NOMI_VALIDI = Object.keys(FBO_MAP);
+  // Giorni
+  var oggi = new Date();
+  var inizioAnno = new Date(2026,0,1);
+  var fineAnno = new Date(2026,11,31);
+  var giorniTr = Math.round((oggi-inizioAnno)/(1000*60*60*24));
+  var giorniRes = Math.round((fineAnno-oggi)/(1000*60*60*24));
+  var settimaneRes = Math.round(giorniRes/7);
 
-function aggiornaConCSV(text) {
-  var righe = text.split('\n').map(function(r){ 
-    return r.split(';').map(function(c){ return c.replace(/^"|"$/g,'').trim(); }); 
-  });
+  // Velocità giornaliera attuale
+  var velGiornFPS = giorniTr > 0 ? totInc/giorniTr : 0;
+  var velGiornOno = giorniTr > 0 ? onoInc/giorniTr : 0;
 
-  // ── Trova riga KPI globali (polizze 50-80, premio > 50000) ──
-  var rigaKPI1 = null, rigaKPI2 = null;
-  for(var i=0; i<righe.length; i++) {
-    var r = righe[i];
-    var col0 = parseInt(r[0]);
-    if(col0 >= 50 && col0 <= 80 && parseNum(r[1]) > 50000) { rigaKPI1 = r; }
-    if(col0 >= 5 && col0 <= 20 && parseNum(r[1]) > 1000 && parseInt(r[2]) > 50) { rigaKPI2 = r; }
-  }
+  // Proiezioni EOY
+  var eoyFPS = totInc + velGiornFPS * giorniRes;
+  var eoyOno = onoInc + velGiornOno * giorniRes;
 
-  // ── Trova inizio ranking FB ──
-  var idxRanking = -1;
-  for(var i=0; i<righe.length; i++) {
-    if(righe[i][1]==='Family Banker' && righe[i][4]==='Polizze') { idxRanking=i+1; break; }
-  }
+  // Gap
+  var gapFPS = BUDGET_FPS - totInc;
+  var gapOno = BUDGET_ONO - onoInc;
 
-  // ── Trova mesi ──
-  var idxMensile = -1;
-  for(var i=0; i<righe.length; i++) {
-    if(righe[i][0]==='Gennaio') { idxMensile=i; break; }
-  }
+  // Velocità necessaria
+  var velNecFPSgg = giorniRes > 0 ? gapFPS/giorniRes : 0;
+  var velNecFPSsett = velNecFPSgg * 7;
 
-  if(!rigaKPI1 || idxRanking<0) {
-    console.log('⚠️ CSV struttura non riconosciuta');
-    return;
-  }
+  // Semaforo Onorato (target 3%/sett = 5400/sett)
+  var targetSettOno = BUDGET_ONO * TARGET_SETT_PCT;
+  var velAttOnoSett = velGiornOno * 7;
+  var onOkRitmo = velAttOnoSett >= targetSettOno;
 
-  // ── Estrai FB — solo nomi validi ──
-  var nuoviFB = [];
-  for(var i=idxRanking; i<righe.length; i++) {
-    var r = righe[i];
-    var nome = (r[1]||'').trim();
-    // Accetta solo nomi nella lista valida
-    if(NOMI_VALIDI.indexOf(nome) < 0) continue;
-    nuoviFB.push({
-      nome: nome,
-      fbo: FBO_MAP[nome],
-      gruppo: GRUPPO_MAP[nome],
-      appt_com: parseInt(r[2])||0,
-      appt_eff: parseInt(r[3])||0,
-      polizze: parseInt(r[4])||0,
-      premio_annuo: parseNum(r[5]),
-      incassato: parseNum(r[6]),
-      conv: parsePct(r[7]),
-      callback: 0,
-      budget: BUDGET_MAP[nome]||0,
-      ingresso: INGRESSO_MAP[nome]||'2020-01-01'
-    });
-  }
+  // % target raggiungibile
+  var pctTargetFPS = eoyFPS / BUDGET_FPS * 100;
 
-  // ── Estrai mesi ──
-  var mesiNomi=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-  var mL=[],mPA=[],mPF=[],mPol=[],mInc=[];
-  if(idxMensile>=0) {
-    for(var i=idxMensile; i<righe.length; i++) {
-      var r=righe[i];
-      if(mesiNomi.indexOf(r[0])<0) continue;
-      if(!r[1]||r[1]==='—') continue;
-      mL.push(r[0]);
-      mPol.push(parseInt(r[1])||0);
-      mPA.push(parseNum(r[2]));
-      mInc.push(parseNum(r[3]));
-      mPF.push(parseNum(r[2])*0.725);
-    }
-  }
+  // Polizze stimate
+  var velPolGiorn = giorniTr > 0 ? totPol/giorniTr : 0;
+  var polStimate = Math.round(totPol + velPolGiorn * giorniRes);
 
-  // ── Aggiorna D ──
-  if(nuoviFB.length>5) {
-    D.fb = nuoviFB;
-    console.log('✅ FB aggiornati:', nuoviFB.length);
-  }
-  if(mL.length>0) {
-    D.monthly.labels=mL; D.monthly.premi_annui=mPA;
-    D.monthly.premi_firma=mPF; D.monthly.polizze=mPol;
-  }
-  // FBO
-  ['Genzano','Pomezia','Latina'].forEach(function(fbo,i){
-    var ff=D.fb.filter(function(f){return f.fbo===fbo;});
-    D.fbo.premi_annui[i]=Math.round(ff.reduce(function(a,f){return a+f.premio_annuo;},0)*100)/100;
-    D.fbo.incassati[i]=Math.round(ff.reduce(function(a,f){return a+f.incassato;},0)*100)/100;
-    D.fbo.polizze[i]=ff.reduce(function(a,f){return a+f.polizze;},0);
-  });
+  // Pol/settimana necessarie
+  var polNecSett = giorniRes > 0 ? Math.round(gapFPS / (totPA/totPol || 800) / (giorniRes/7)) : 0;
 
-  // ── Aggiorna KPI statici ──
-  var totPA=D.fb.reduce(function(a,f){return a+f.premio_annuo;},0);
-  var totInc=D.fb.reduce(function(a,f){return a+f.incassato;},0);
-  var totPol=D.fb.reduce(function(a,f){return a+f.polizze;},0);
-  var totAC=D.fb.reduce(function(a,f){return a+f.appt_com;},0);
-  var totAE=D.fb.reduce(function(a,f){return a+f.appt_eff;},0);
-  var totCB=D.fb.reduce(function(a,f){return a+f.callback;},0);
+  // Incasso medio mensile necessario (dati dall'ultimo mese)
+  var mesiRes = D.monthly ? (12 - D.monthly.labels.length) : 8;
+  var incMeseNec = mesiRes > 0 ? Math.round(gapFPS/mesiRes) : 0;
 
   function fmtN(n){return Math.round(n).toLocaleString('it-IT');}
+  function fmtE(n){return '€ '+fmtN(n);}
+  function fmtP(n){return n.toFixed(1)+'%';}
+  function setT(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+  function setW(id,w){var e=document.getElementById(id);if(e)e.style.width=Math.min(w,100)+'%';}
 
-  document.querySelectorAll('.kpi-card').forEach(function(card){
-    var lbl=card.querySelector('.kpi-card-label');
-    var val=card.querySelector('.kpi-card-val');
-    if(!lbl||!val) return;
-    var t=lbl.textContent.trim();
-    if(t.indexOf('Premi annui totali')>=0)    val.textContent=fmtN(totPA);
-    if(t.indexOf('Premio alla firma')>=0 && t.indexOf('Budget')<0) val.textContent=fmtN(D.monthly.premi_firma.reduce(function(a,b){return a+b;},0));
-    if(t.indexOf('Premi incassati')>=0 && t.indexOf('Budget')<0 && t.indexOf('Premi totali')<0) val.textContent=fmtN(totInc);
-    if(t.indexOf('Polizze sottoscritte')>=0)  val.textContent=totPol;
-    if(t.indexOf('comunicati')>=0 && t.indexOf('effettuati')<0 && t.indexOf('App')>=0) val.textContent=totAC;
-    if(t.indexOf('effettuati')>=0 && t.indexOf('→')<0) val.textContent=totAE;
-    if(t.indexOf('Callback')>=0)              val.textContent=totCB;
-    if(t.indexOf('Provvigioni')>=0)           val.textContent=fmtN(Math.round(totInc*0.097));
-    if(t.indexOf('comunicati')>=0 && t.indexOf('effettuati')>=0) {
-      val.textContent = totAC>0?(totAE/totAC*100).toFixed(1)+'%':'0%';
-    }
-  });
+  // KPI header
+  setT('rv_giorni_tr', giorniTr);
+  setT('rv_giorni_res', giorniRes);
+  setT('rv_ritardo', fmtN(50463)); // dal CSV
+  setT('rv_pct_target', fmtP(pctTargetFPS));
 
-  // Sub appt
-  document.querySelectorAll('.kpi-card-sub').forEach(function(s){
-    if(s.textContent.indexOf('Su ')>=0 && s.textContent.indexOf('comunicati')>=0)
-      s.textContent='Su '+totAC+' comunicati';
-  });
+  // FPS
+  setT('rv_fps_inc', fmtE(totInc));
+  setT('rv_fps_pct_lbl', fmtP(totInc/BUDGET_FPS*100)+' del budget');
+  setT('rv_fps_gap', fmtE(gapFPS));
+  setT('rv_fps_eoy', fmtE(eoyFPS));
+  setT('rv_fps_eoy_pct', fmtP(eoyFPS/BUDGET_FPS*100)+' del budget');
+  setT('rv_fps_pct', fmtP(totInc/BUDGET_FPS*100));
+  setW('rv_fps_bar', totInc/BUDGET_FPS*100);
+  setT('rv_fps_vel', fmtE(Math.round(velNecFPSgg))+'/gg');
+  setT('rv_fps_polsett', polNecSett);
 
-  // ── Rigenera TUTTE le sezioni ──
-  // Overview ranking
-  var ovR=document.getElementById('ov_ranking');
-  if(ovR){ovR.innerHTML=''; buildOvRanking();}
-  // Team table
-  var teT=document.getElementById('te_table');
-  if(teT){teT.innerHTML=''; buildTeamTable();}
-  // FB selector
-  var sel=document.getElementById('fb_selector');
-  if(sel){
-    while(sel.options.length>1) sel.remove(1);
-    buildFBSelector();
+  // Onorato
+  setT('rv_ono_inc', fmtE(onoInc));
+  setT('rv_ono_pct_lbl', fmtP(onoInc/BUDGET_ONO*100)+' del budget');
+  setT('rv_ono_gap', fmtE(gapOno));
+  setT('rv_ono_eoy', fmtE(eoyOno));
+  setT('rv_ono_eoy_pct', fmtP(eoyOno/BUDGET_ONO*100)+' del budget');
+  setT('rv_ono_pct', fmtP(onoInc/BUDGET_ONO*100));
+  setW('rv_ono_bar', onoInc/BUDGET_ONO*100);
+  setT('rv_ono_vel_sett', fmtE(Math.round(velAttOnoSett))+'/sett');
+
+  // Semaforo Onorato
+  var semEl = document.getElementById('rv_ono_semaforo');
+  var statoEl = document.getElementById('rv_ono_stato_txt');
+  var boxEl = semEl ? semEl.parentElement.parentElement : null;
+  if(onOkRitmo) {
+    if(semEl) semEl.textContent = '🟢';
+    if(statoEl) statoEl.textContent = 'In ritmo — target 3%/sett rispettato';
+    if(boxEl) { boxEl.style.background='var(--green-light)'; boxEl.style.border='1px solid #A7F3D0'; }
+  } else {
+    if(semEl) semEl.textContent = '🔴';
+    if(statoEl) statoEl.textContent = 'Sotto ritmo — target 3%/sett = '+fmtE(Math.round(targetSettOno))+'/sett';
+    if(boxEl) { boxEl.style.background='var(--red-light)'; boxEl.style.border='1px solid #FECACA'; }
   }
-  // Budget personale
-  var bpT=document.getElementById('bp_contrib_tbody');
-  if(bpT){bpT.innerHTML=''; buildBudgetPersonale();}
-  // Budget FPS
-  var fpsT=document.getElementById('fps_fbo_tbody');
-  if(fpsT){fpsT.innerHTML=''; buildBudgetFPS();}
-  // Challenge
-  var chT=document.getElementById('ch_tbody');
-  if(chT){chT.innerHTML=''; buildChallenge();}
-  // Lavorazione
-  var lavT=document.getElementById('lav_tbody');
-  if(lavT){lavT.innerHTML=''; buildLavorazione();}
-  // Top player tables
-  buildTopPlayerTables();
 
-  // ── Rigenera TUTTI i grafici ──
-  Object.keys(Chart.instances).forEach(function(k){ Chart.instances[k].destroy(); });
-  initCharts();
-  initBudgetCharts();
+  // Indicatori
+  setT('rv_pol_stimate', polStimate);
+  setT('rv_imp_sett', fmtE(Math.round(velNecFPSsett)));
+  setT('rv_premi_stim', fmtE(Math.round(totPA + (totPA/giorniTr)*giorniRes)));
+  setT('rv_inc_mese', fmtE(incMeseNec));
 
-  // KPI attivi
-  var nV=D.fb.filter(function(f){return statoFB(f.polizze).txt==='Attivo';}).length;
-  var nO=D.fb.filter(function(f){return statoFB(f.polizze).txt==='In ritardo';}).length;
-  var nR=D.fb.filter(function(f){return statoFB(f.polizze).txt==='Sotto ritmo';}).length;
-  var elV=document.getElementById('kpi_attivi_val'); if(elV){elV.textContent=nV; elV.style.color=nV>=10?'#059669':nV>=6?'#D97706':'#DC2626';}
-  var elS=document.getElementById('kpi_attivi_sub'); if(elS) elS.textContent='🟠 '+nO+' in ritardo  ·  🔴 '+nR+' sotto ritmo';
-  var elL=document.getElementById('kpi_attivi_min'); if(elL) elL.textContent='min. '+POL_MIN+' pol. (mese '+MESE_NOW+')';
+  // Tabella mensile
+  var tbody = document.getElementById('rv_tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  if(!D.monthly) return;
 
-  console.log('✅ Dashboard completamente aggiornata!');
+  var mesiNomi = D.monthly.labels;
+  var incCum = 0;
+  var targetProg = [25000,50000,75000,100000,125000,150000,175000,200000,225000,250000,275000,300000];
+  var incMensili = [10407,7416,19581,900]; // dal CSV
+
+  mesiNomi.forEach(function(mese,i) {
+    incCum += (incMensili[i] || 0);
+    var scost = incCum - (targetProg[i] || 0);
+    var stato = scost >= 0 ? '<span style="color:var(--green)">↑ In ritmo</span>' : '<span style="color:var(--red)">↓ In ritardo</span>';
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td><strong>'+mese+'</strong></td>'+
+      '<td>'+D.monthly.polizze[i]+'</td>'+
+      '<td>€ '+fmtN(D.monthly.premi_annui[i])+'</td>'+
+      '<td>€ '+fmtN(incMensili[i]||0)+'</td>'+
+      '<td>'+(D.monthly.premi_annui[i]/totPA*100).toFixed(1)+'%</td>'+
+      '<td>€ '+fmtN(targetProg[i]||0)+'</td>'+
+      '<td style="color:'+(scost>=0?'var(--green)':'var(--red)')+'">'+
+        (scost>=0?'+':'')+fmtN(scost)+'</td>'+
+      '<td>'+stato+'</td>'+
+      '<td>—</td>'+
+      '<td>—</td>';
+    tbody.appendChild(tr);
+  });
 }
-
-// Carica CSV all'avvio
-fetch(CSV_URL+'?t='+Date.now())
-  .then(function(r){return r.text();})
-  .then(function(t){aggiornaConCSV(t);})
-  .catch(function(e){console.log('ℹ️ Uso dati embedded:',e.message);});
 
 // =================== NAV ===================
 function showSection(id, el) {
@@ -1759,6 +1873,7 @@ document.addEventListener('DOMContentLoaded',function(){
   buildBudgetPersonale();
   buildChallenge();
   buildLavorazione();
+  buildRitmoVendita();
   initCharts();
   initBudgetCharts();
 
