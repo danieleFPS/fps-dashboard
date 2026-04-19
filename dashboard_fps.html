@@ -1136,6 +1136,217 @@ function buildLavorazione() {
   var elA = document.getElementById('kpi_lav_ann'); if(elA) elA.textContent = fmt(Math.round(totAnnuo));
 }
 
+
+// =================== LETTORE CSV DA GITHUB ===================
+var CSV_URL = "https://raw.githubusercontent.com/danieleFPS/fps-dashboard/main/fps_kpi.csv";
+
+function parseNum(s) {
+  if(!s || s==='-' || s==='—') return 0;
+  return parseFloat(s.replace(/[€\s]/g,'').replace(/\./g,'').replace(',','.')) || 0;
+}
+function parseIntClean(s) {
+  if(!s || s==='-' || s==='—') return 0;
+  return parseInt(s.replace(/[^0-9]/g,'')) || 0;
+}
+function parsePct(s) {
+  if(!s || s==='-' || s==='—') return 0;
+  return parseFloat(s.replace('%','').replace(',','.')) / 100 || 0;
+}
+
+function aggiornaConCSV(text) {
+  var righe = text.split('\n').map(function(r){ return r.split(';').map(function(c){ return c.replace(/^"|"$/g,'').trim(); }); });
+
+  // ── Trova riga indicatori chiave (riga con il numero 62 polizze) ──
+  var rigaKPI = null, rigaKPI2 = null;
+  for(var i=0; i<righe.length; i++) {
+    var r = righe[i];
+    if(r[0] && parseInt(r[0]) >= 50 && parseInt(r[0]) <= 80 && parseNum(r[1]) > 50000) {
+      rigaKPI = r; // riga con polizze, premio annuo, incasso previsto...
+    }
+    if(r[0] && parseInt(r[0]) >= 5 && parseInt(r[0]) <= 20 && parseNum(r[1]) > 5000 && parseInt(r[2]) > 100) {
+      rigaKPI2 = r; // riga con pol.lavorazione, firma lav, appt com, appt eff...
+    }
+  }
+
+  // ── Trova riga ranking FB (inizia con #;Family Banker) ──
+  var idxRanking = -1;
+  for(var i=0; i<righe.length; i++) {
+    if(righe[i][1] === 'Family Banker' && righe[i][2].indexOf('Comuni') >= 0) {
+      idxRanking = i + 1; break;
+    }
+  }
+
+  // ── Trova righe mensili ──
+  var idxMensile = -1;
+  for(var i=0; i<righe.length; i++) {
+    if(righe[i][0] === 'Gennaio') { idxMensile = i; break; }
+  }
+
+  if(!rigaKPI || idxRanking < 0) {
+    console.log('⚠️ CSV: struttura non riconosciuta, uso dati embedded');
+    return;
+  }
+
+  console.log('✅ CSV caricato — aggiorno dashboard...');
+
+  // ── Estrai KPI globali ──
+  var totPolizze  = parseInt(rigaKPI[0]) || 0;
+  var totPremioA  = parseNum(rigaKPI[1]);
+  var incassoPrev = parseNum(rigaKPI[2]);
+  var premioFirma = parseNum(rigaKPI[3]);
+  var totIncassato= parseNum(rigaKPI[4]);
+  var residuo     = parseNum(rigaKPI[5]);
+
+  var polLav    = rigaKPI2 ? parseInt(rigaKPI2[0]) || 0 : 0;
+  var firmaLav  = rigaKPI2 ? parseNum(rigaKPI2[1]) : 0;
+  var apptCom   = rigaKPI2 ? parseInt(rigaKPI2[2]) || 0 : 0;
+  var apptEff   = rigaKPI2 ? parseInt(rigaKPI2[3]) || 0 : 0;
+  var tassConv  = rigaKPI2 ? rigaKPI2[4] : '0%';
+  var callback  = rigaKPI2 ? parseInt(rigaKPI2[5]) || 0 : 0;
+  var provv     = rigaKPI2 ? parseNum(rigaKPI2[6]) : 0;
+  var fbAttivi  = rigaKPI2 ? parseInt(rigaKPI2[7]) || 0 : 0;
+
+  // ── Estrai FB dal ranking ──
+  var nuoviFB = [];
+  var BUDGET_MAP = {"Alzetta Stefano":0,"Battisti Amelia":5000,"Cangemi Francesco":5000,"Cristofari Rita":10000,"Curra Isabella":10000,"De Marco Fabio":15000,"Di Marcello Sabrina":5000,"Ercolino Giovanni":10000,"Galieti Fabio":10000,"Gallo Armando":10000,"Gallo Tiziano":5000,"Giordano Ferdinando":0,"Grifoni Cristiana":10000,"Lolletti Benedetto":15000,"Maola Daniele":10000,"Mazzetta Alessandra":40000,"Onorato Beniamino":25000,"Panfili Stefano":0,"Pozzana Patrizia":10000,"Rizza Andrea":3000,"Santachiara Manuel":3000};
+  var INGRESSO_MAP = {"Alzetta Stefano":"2020-03-13","Battisti Amelia":"2018-06-19","Cangemi Francesco":"2018-07-14","Cristofari Rita":"2022-07-02","Curra Isabella":"2023-10-02","De Marco Fabio":"2018-09-28","Di Marcello Sabrina":"2019-09-04","Ercolino Giovanni":"2022-10-21","Galieti Fabio":"2022-12-03","Gallo Armando":"2023-09-14","Gallo Tiziano":"2021-06-10","Giordano Ferdinando":"2024-04-03","Grifoni Cristiana":"2023-08-10","Lolletti Benedetto":"2021-03-25","Maola Daniele":"2021-01-22","Mazzetta Alessandra":"2023-06-20","Onorato Beniamino":"2024-02-09","Panfili Stefano":"2023-12-10","Pozzana Patrizia":"2021-11-12","Rizza Andrea":"2019-10-04","Santachiara Manuel":"2024-05-05"};
+  var FBO_MAP = {"Alzetta Stefano":"Genzano","Battisti Amelia":"Pomezia","Cangemi Francesco":"Pomezia","Cristofari Rita":"Pomezia","Curra Isabella":"Genzano","De Marco Fabio":"Pomezia","Di Marcello Sabrina":"Pomezia","Ercolino Giovanni":"Genzano","Galieti Fabio":"Genzano","Gallo Armando":"Pomezia","Gallo Tiziano":"Genzano","Giordano Ferdinando":"Genzano","Grifoni Cristiana":"Pomezia","Lolletti Benedetto":"Genzano","Maola Daniele":"Pomezia","Mazzetta Alessandra":"Pomezia","Onorato Beniamino":"Genzano","Panfili Stefano":"Latina","Pozzana Patrizia":"Genzano","Rizza Andrea":"Genzano","Santachiara Manuel":"Pomezia"};
+  var GRUPPO_MAP = {"Alzetta Stefano":"Onorato","Battisti Amelia":"Cocco","Cangemi Francesco":"Onorato","Cristofari Rita":"Onorato","Curra Isabella":"Onorato","De Marco Fabio":"Onorato","Di Marcello Sabrina":"Onorato","Ercolino Giovanni":"Onorato","Galieti Fabio":"Onorato","Gallo Armando":"Onorato","Gallo Tiziano":"Onorato","Giordano Ferdinando":"Onorato","Grifoni Cristiana":"Onorato","Lolletti Benedetto":"Onorato","Maola Daniele":"Onorato","Mazzetta Alessandra":"Onorato","Onorato Beniamino":"Onorato","Panfili Stefano":"Panfili","Pozzana Patrizia":"Onorato","Rizza Andrea":"Onorato","Santachiara Manuel":"Onorato"};
+
+  for(var i=idxRanking; i<righe.length; i++) {
+    var r = righe[i];
+    var nome = r[1] ? r[1].trim() : '';
+    if(!nome || nome==='TOTALE' || nome==='0' || nome==='Family Banker') continue;
+    if(nome.length < 3) continue;
+    nuoviFB.push({
+      nome: nome,
+      fbo: FBO_MAP[nome] || 'Pomezia',
+      gruppo: GRUPPO_MAP[nome] || 'Onorato',
+      appt_com: parseInt(r[2]) || 0,
+      appt_eff: parseInt(r[3]) || 0,
+      polizze: parseInt(r[4]) || 0,
+      premio_annuo: parseNum(r[5]),
+      incassato: parseNum(r[6]),
+      conv: parsePct(r[7]),
+      callback: 0,
+      budget: BUDGET_MAP[nome] || 0,
+      ingresso: INGRESSO_MAP[nome] || '2020-01-01'
+    });
+  }
+
+  // ── Estrai dati mensili ──
+  var mesiLabels=[], mesiPA=[], mesiPF=[], mesiPol=[], mesiInc=[];
+  if(idxMensile >= 0) {
+    var mesiNomi = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+    for(var i=idxMensile; i<righe.length; i++) {
+      var r = righe[i];
+      var mese = r[0] ? r[0].trim() : '';
+      if(mesiNomi.indexOf(mese) < 0) continue;
+      if(r[1] === '—' || !r[1]) continue;
+      mesiLabels.push(mese);
+      mesiPol.push(parseInt(r[1]) || 0);
+      mesiPA.push(parseNum(r[2]));
+      mesiInc.push(parseNum(r[3]));
+      mesiPF.push(parseNum(r[2]) * 0.7); // stima firma
+    }
+  }
+
+  // ── Aggiorna D con i nuovi dati ──
+  if(nuoviFB.length > 5) {
+    D.fb = nuoviFB;
+    console.log('✅ FB aggiornati:', nuoviFB.length);
+  }
+  if(mesiLabels.length > 0) {
+    D.monthly.labels = mesiLabels;
+    D.monthly.premi_annui = mesiPA;
+    D.monthly.premi_firma = mesiPF;
+    D.monthly.polizze = mesiPol;
+    console.log('✅ Mensili aggiornati:', mesiLabels.length, 'mesi');
+  }
+
+  // ── Aggiorna FBO ──
+  ['Genzano','Pomezia','Latina'].forEach(function(fbo, i) {
+    var fbFBO = D.fb.filter(function(f){ return f.fbo===fbo; });
+    D.fbo.premi_annui[i] = fbFBO.reduce(function(a,f){ return a+f.premio_annuo; }, 0);
+    D.fbo.incassati[i]   = fbFBO.reduce(function(a,f){ return a+f.incassato; }, 0);
+    D.fbo.polizze[i]     = fbFBO.reduce(function(a,f){ return a+f.polizze; }, 0);
+  });
+
+  // ── Aggiorna KPI statici nell'HTML ──
+  function fmtN(n){ return Math.round(n).toLocaleString('it-IT'); }
+  function setEl(id, val){ var e=document.getElementById(id); if(e) e.textContent=val; }
+  function setHtml(id, val){ var e=document.getElementById(id); if(e) e.innerHTML=val; }
+
+  // KPI overview
+  var els = document.querySelectorAll('.kpi-card-val.euro');
+  // Aggiorna tramite querySelector sui label
+  document.querySelectorAll('.kpi-card').forEach(function(card) {
+    var lbl = card.querySelector('.kpi-card-label');
+    var val = card.querySelector('.kpi-card-val');
+    if(!lbl || !val) return;
+    var t = lbl.textContent.trim();
+    if(t.indexOf('Premi annui totali') >= 0)      val.textContent = fmtN(totPremioA);
+    if(t.indexOf('Premio alla firma') >= 0)        val.textContent = fmtN(premioFirma);
+    if(t.indexOf('Premi incassati') >= 0 && t.indexOf('Budget')<0) val.textContent = fmtN(totIncassato);
+    if(t.indexOf('Polizze sottoscritte') >= 0)     val.textContent = totPolizze;
+    if(t.indexOf('comunicati') >= 0 && t.indexOf('App') >= 0 && t.indexOf('effettuati') < 0) val.textContent = apptCom;
+    if(t.indexOf('effettuati') >= 0)               val.textContent = apptEff;
+    if(t.indexOf('Callback') >= 0)                 val.textContent = callback;
+    if(t.indexOf('Provvigioni') >= 0)              val.textContent = fmtN(provv);
+  });
+
+  // Aggiorna appt sub
+  document.querySelectorAll('.kpi-card-sub').forEach(function(sub) {
+    if(sub.textContent.indexOf('comunicati') >= 0 && sub.textContent.indexOf('Su') >= 0) {
+      sub.textContent = 'Su ' + apptCom + ' comunicati';
+    }
+  });
+
+  // Tasso conversione appt→effettuati
+  var convAppt = apptCom > 0 ? (apptEff/apptCom*100).toFixed(1)+'%' : '0%';
+  document.querySelectorAll('.kpi-card').forEach(function(card) {
+    var lbl = card.querySelector('.kpi-card-label');
+    var val = card.querySelector('.kpi-card-val');
+    if(!lbl || !val) return;
+    if(lbl.textContent.indexOf('comunicati') >= 0 && lbl.textContent.indexOf('effettuati') >= 0) {
+      val.textContent = convAppt;
+    }
+    if(lbl.textContent.indexOf('Tasso di conversione') >= 0) {
+      val.textContent = tassConv;
+    }
+  });
+
+  // FB attivi KPI
+  setEl('kpi_attivi_val', fbAttivi);
+
+  // Rigenera tabelle e grafici
+  document.getElementById('ov_ranking').innerHTML = '';
+  buildOvRanking();
+  document.getElementById('te_table').innerHTML = '';
+  buildTeamTable();
+  document.getElementById('bp_contrib_tbody').innerHTML = '';
+  buildBudgetPersonale();
+  document.getElementById('fps_fbo_tbody').innerHTML = '';
+  buildBudgetFPS();
+  document.getElementById('ch_tbody').innerHTML = '';
+  buildChallenge();
+  document.getElementById('lav_tbody').innerHTML = '';
+  buildLavorazione();
+
+  // Rigenera grafici (distruggi e ricrea)
+  Chart.helpers.each(Chart.instances, function(chart){ chart.destroy(); });
+  initCharts();
+  initBudgetCharts();
+
+  console.log('✅ Dashboard aggiornata con dati CSV!');
+}
+
+// Carica il CSV all'avvio
+fetch(CSV_URL + '?t=' + Date.now())
+  .then(function(r){ return r.text(); })
+  .then(function(text){ aggiornaConCSV(text); })
+  .catch(function(e){ console.log('ℹ️ CSV non disponibile, uso dati embedded:', e.message); });
+
 // =================== NAV ===================
 function showSection(id, el) {
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
