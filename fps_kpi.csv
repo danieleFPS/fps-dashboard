@@ -5,7 +5,7 @@ Valori riferiti al periodo selezionato nelle celle gialle.;;;;;;;;;;;;
 Data DA:;01/01/26;;Data A:;31/12/26;;← modifica per filtrare;;;;;;
 ;;;;;;;;;;;;
 🎯  OBIETTIVO ANNUO  —  basato sui Premi Incassati  (target modificabile);;;;;;;;;;;;
-Target Premi Incassati (€):;;300.000,00 €;;Gap al 31/12:;245.202,89 €;;18% raggiunto;;;;;
+Target Premi Incassati (€):;;300.000,00 €;;Gap al 31/12:;255.202,89 €;;15% raggiunto;;;;;
 ;;;;;;;;;;;;
 📈  INDICATORI CHIAVE;;;;;;;;;;;;
 "📋 Polizze
@@ -18,7 +18,7 @@ Reale 2026 (€)";"🗓️ Importi da
 Incassare nel
 2027 (€)";"💰  PREMI DA
 INCASSARE TOTALI";;;;;
-63;181.822,28;149.798,97;54.797,11;38.304,35;111.494,62;32.023,31;143.517,93;;;;;
+62;61.822,28;59.798,97;44.797,11;38.304,35;21.494,62;2.023,31;23.517,93;;;;;
 YTD 2026;YTD 2026;YTD 2026;YTD 2026;YTD 2026;YTD 2026;YTD 2026;YTD 2026;;;;;
 ;;;;;;;;;;;;
 "⚙️ Pol. in
@@ -30,16 +30,16 @@ Conversione";"🔄 Callback
 Aperti";"💵 Provvigioni
 (€)";"👥 Family Banker
 attivi";;;;;
-12;8.096,02;161;77;75%;15;3.715,52;8;;;;;
+12;8.096,02;161;76;75%;15;3.715,52;8;;;;;
 YTD 2026;YTD 2026;YTD 2026;YTD 2026;YTD 2026;YTD 2026;YTD 2026;42% su 19 FB;;;;;
 ;;;;;;;;;;;;
 🏆  RANKING FAMILY BANKER  —  per Premio Annuo;;;;;;;;;;;;
 #;Family Banker;App.ti  Comunicati;App.ti Effettuati;Polizze;Premio Annuo (€);Premi Incassati (€);Conv. %;;;;;
-🥇;Maola Daniele;1;7;7;125.346,74;2.090,46;100%;;;;;
-🥈;Mazzetta Alessandra;28;12;10;12.931,54;3.227,47;83%;;;;;
-🥉;Curra Isabella;12;5;4;9.154,91;6.746,44;80%;;;;;
-4;Panfili Stefano;0;1;1;6.001,89;6.001,89;100%;;;;;
-5;Galieti Fabio;7;3;3;5.362,15;5.362,15;75%;;;;;
+🥇;Mazzetta Alessandra;28;12;10;12.931,54;3.227,47;83%;;;;;
+🥈;Curra Isabella;12;5;4;9.154,91;6.746,44;80%;;;;;
+🥉;Panfili Stefano;0;1;1;6.001,89;6.001,89;100%;;;;;
+4;Galieti Fabio;7;3;3;5.362,15;5.362,15;75%;;;;;
+5;Maola Daniele;1;6;6;5.346,74;2.090,46;100%;;;;;
 6;Onorato Beniamino;9;3;3;4.731,00;4.731,00;100%;;;;;
 7;Lolletti Benedetto;14;12;7;4.339,51;4.024,11;54%;;;;;
 8;Ercolino Giovanni;18;7;7;3.613,64;1.063,04;100%;;;;;
@@ -57,7 +57,7 @@ YTD 2026;YTD 2026;YTD 2026;YTD 2026;YTD 2026;YTD 2026;YTD 2026;42% su 19 FB;;;;;
 20;Rizza Andrea;0;0;0;0,00;0,00;0%;;;;;
 21;Santachiara Manuel;0;0;0;0,00;0,00;0%;;;;;
 22;0;0;0;0;0,00;0,00;0%;;;;;
-;TOTALE;161;77;63;181.822,28;38.304,35;0,8%;;;;;
+;TOTALE;161;76;62;61.822,28;38.304,35;0,7%;;;;;
 ;;;;;;;;;;;;
 ;;;;;;;;;;;;
    —  ANDAMENTO MENSILE  —  Polizze, premi incassati e velocità rispetto all’obiettivo  |  I mesi futuri mostrano «—» finché non vengono inseriti dati;;;;;;;;;;;;
@@ -73,10 +73,10 @@ rispetto all’obiettivo (€)";"Stato rispetto alla
 velocità obiettivo";"Incasso medio necessario
 nei mesi restanti (€)";"Ritardo cumulativo
 da recuperare oggi (€)"
-Gennaio;11;€ 14.552;€ 10.407;8,0%;Primo mese;€ 15.280;;€ 25.000;-€ 14.593;↓ In ritardo;€ 26.327;€ 14.593
-Febbraio;13;€ 13.402;€ 7.416;7,4%;-7,9%;€ 14.072;;€ 50.000;-€ 32.177;↓ In ritardo;€ 28.218;€ 32.177
-Marzo;26;€ 27.247;€ 19.581;15,0%;103,3%;€ 28.609;▲ Mese più produttivo YTD (26 pol);€ 75.000;-€ 37.596;↓ In ritardo;€ 29.177;€ 37.596
-Aprile;13;€ 126.621;€ 900;69,6%;364,7%;€ 132.952;▼ Mese meno produttivo YTD;€ 100.000;-€ 61.696;↓ In ritardo;€ 32.712;€ 51.285
+Gennaio;11;€ 14.552;€ 10.407;23,5%;Primo mese;€ 15.280;;€ 25.000;-€ 14.593;↓ In ritardo;€ 26.327;€ 14.593
+Febbraio;13;€ 13.402;€ 7.416;21,7%;-7,9%;€ 14.072;;€ 50.000;-€ 32.177;↓ In ritardo;€ 28.218;€ 32.177
+Marzo;26;€ 27.247;€ 19.581;44,1%;103,3%;€ 28.609;▲ Mese più produttivo YTD (26 pol);€ 75.000;-€ 37.596;↓ In ritardo;€ 29.177;€ 37.596
+Aprile;12;€ 6.621;€ 900;10,7%;-75,7%;€ 6.952;▼ Mese meno produttivo YTD;€ 100.000;-€ 61.696;↓ In ritardo;€ 32.712;€ 50.463
 Maggio;—;—;—;—;—;—;—;—;—;—;—;—
 Giugno;—;—;—;—;—;—;—;—;—;—;—;—
 Luglio;—;—;—;—;—;—;—;—;—;—;—;—
@@ -85,7 +85,7 @@ Settembre;—;—;—;—;—;—;—;—;—;—;—;—
 Ottobre;—;—;—;—;—;—;—;—;—;—;—;—
 Novembre;—;—;—;—;—;—;—;—;—;—;—;—
 Dicembre;—;—;—;—;—;—;—;—;—;—;—;—
-TOTALE ANNO 2026;63;€ 181.822;€ 38.304;100%;;;;300.000,00 €;-261695,65;↓ Da recuperare;261695,65;51285
+TOTALE ANNO 2026;62;€ 61.822;€ 38.304;100%;;;;300.000,00 €;-261695,65;↓ Da recuperare;261695,65;50463
   COME LEGGERE LE COLONNE  —  indicatori mensili di avanzamento verso l’obiettivo annuale;;;;;;;;;;;;
 "Mese = periodo di competenza; Polizze sottoscritte = numero di polizze chiuse; Volume premi annui = valore annuo delle polizze; Premi incassati = importi effettivamente incassati secondo il foglio Controllo Rate; Percentuale sul totale anno = peso del mese sul totale; Variazione rispetto al mese precedente = confronto con il mese prima; Proiezione del mese successivo = stima lineare; Target progressivo dell’obiettivo = quota di budget che dovrebbe essere già maturata a fine mese; Scostamento cumulato = incassato cumulato meno target cumulato di fine mese; Stato rispetto alla velocità obiettivo = freccia verde sopra ritmo, freccia gialla in linea, freccia rossa in ritardo; Incasso medio necessario nei mesi restanti = quanto occorre incassare in media ogni mese da lì in avanti per chiudere l’obiettivo annuale; Ritardo cumulativo da recuperare oggi = nei mesi chiusi coincide con il gap a fine mese, mentre nel mese corrente misura il gap maturato alla data dell’ultimo aggiornamento disponibile.";;;;;;;;;;;;
   —  PROIEZIONI AL 31 DICEMBRE 2026  —  Calcolate automaticamente  |  Formula: Valore YTD + (Valore YTD ÷ Giorni trascorsi) × Giorni rimanenti;;;;;;;;;;;;
@@ -97,5 +97,5 @@ AL 31 DICEMBRE 2026 (€)";"APPUNTAMENTI TOTALI STIMATI
 AL 31 DICEMBRE 2026";"PROVVIGIONI TOTALI STIMATE
 AL 31 DICEMBRE 2026 (€)";"% DEL TARGET RAGGIUNGIBILE
 AL RITMO ATTUALE";;;;;;
-;211;€ 608.854;€ 575.633;258;€ 17.799;191,9%;;;;;;
+;210;€ 208.936;€ 175.407;257;€ 14.685;58,5%;;;;;;
 ;Stima: al ritmo di 0.55 pol/giorno, a fine anno il team avrà circa 200 polizze.;Proiezione lineare del volume premi. Aggiorna automaticamente quando inserisci nuove polizze.;Proiezione degli incassi effettivi al ritmo attuale. Confronta con il target per valutare il gap da colmare.;Stima del numero totale di incontri con clienti a fine anno, mantenendo il ritmo settimanale attuale.;Stima delle commissioni totali generate dal team. Utile per pianificare i compensi e valutare la redditività.;Percentuale del target annuo raggiungibile senza cambiare ritmo. Se inferiore al 100%, il team deve accelerare.;;;;;;
