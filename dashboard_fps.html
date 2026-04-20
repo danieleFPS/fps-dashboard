@@ -691,53 +691,37 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--n
 <div id="section-ritmo_vendita" class="section">
   <div style="background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-radius:14px;padding:20px 24px;color:white;margin-bottom:14px">
     <div style="font-size:20px;font-weight:700">📈 Ritmo di Vendita 2026</div>
-    <div style="font-size:12px;opacity:0.6;margin-top:3px">Velocità, proiezioni e gap — aggiornato automaticamente dal CSV</div>
+    <div style="font-size:12px;opacity:0.6;margin-top:3px">Velocità, proiezioni e gap — aggiornato automaticamente</div>
   </div>
   <div class="kpi-row-4" style="margin-bottom:14px">
-    <div class="kpi-card border-blue">
-      <div class="kpi-card-label">Giorni trascorsi 2026</div>
-      <div class="kpi-card-val" id="rv_giorni_tr">108</div>
-      <div class="kpi-card-sub gray">dall'1 gennaio</div>
-    </div>
-    <div class="kpi-card border-blue">
-      <div class="kpi-card-label">Giorni residui</div>
-      <div class="kpi-card-val" id="rv_giorni_res">257</div>
-      <div class="kpi-card-sub gray">al 31 dicembre</div>
-    </div>
-    <div class="kpi-card border-orange">
-      <div class="kpi-card-label">Ritardo da recuperare</div>
-      <div class="kpi-card-val euro" style="color:var(--red)" id="rv_ritardo">50.463</div>
-      <div class="kpi-card-sub red">gap cumulato vs target</div>
-    </div>
-    <div class="kpi-card border-green">
-      <div class="kpi-card-label">% target raggiungibile</div>
-      <div class="kpi-card-val" style="color:var(--orange)" id="rv_pct_target">58,5%</div>
-      <div class="kpi-card-sub orange">al ritmo attuale</div>
-    </div>
+    <div class="kpi-card border-blue"><div class="kpi-card-label">Giorni trascorsi 2026</div><div class="kpi-card-val" id="rv_giorni_tr">108</div><div class="kpi-card-sub gray">dall'1 gennaio</div></div>
+    <div class="kpi-card border-blue"><div class="kpi-card-label">Giorni residui</div><div class="kpi-card-val" id="rv_giorni_res">257</div><div class="kpi-card-sub gray">al 31 dicembre</div></div>
+    <div class="kpi-card border-orange"><div class="kpi-card-label">Ritardo da recuperare</div><div class="kpi-card-val euro" style="color:var(--red)" id="rv_ritardo">50.463</div><div class="kpi-card-sub red">gap cumulato vs target</div></div>
+    <div class="kpi-card border-green"><div class="kpi-card-label">% target raggiungibile</div><div class="kpi-card-val" style="color:var(--orange)" id="rv_pct_target">58,5%</div><div class="kpi-card-sub orange">al ritmo attuale</div></div>
   </div>
   <div class="grid-2" style="margin-bottom:14px">
     <div class="card">
       <div class="card-title">💼 Budget FPS — € 300.000</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-        <div class="ritmo-box green"><div class="ritmo-box-label">Incassato YTD</div><div class="ritmo-box-val green" style="font-size:16px" id="rv_fps_inc">€ 38.304</div><div class="ritmo-box-sub" id="rv_fps_pct_lbl">12,8% del budget</div></div>
+        <div class="ritmo-box green"><div class="ritmo-box-label">Incassato YTD</div><div class="ritmo-box-val green" style="font-size:16px" id="rv_fps_inc">€ 38.304</div><div class="ritmo-box-sub" id="rv_fps_pct_lbl">12,8%</div></div>
         <div class="ritmo-box red"><div class="ritmo-box-label">Gap al 31/12</div><div class="ritmo-box-val red" style="font-size:16px" id="rv_fps_gap">€ 261.696</div><div class="ritmo-box-sub">da recuperare</div></div>
-        <div class="ritmo-box orange"><div class="ritmo-box-label">Proiezione EOY</div><div class="ritmo-box-val orange" style="font-size:16px" id="rv_fps_eoy">€ 129.455</div><div class="ritmo-box-sub" id="rv_fps_eoy_pct">43,2% del budget</div></div>
+        <div class="ritmo-box orange"><div class="ritmo-box-label">Proiezione EOY</div><div class="ritmo-box-val orange" style="font-size:16px" id="rv_fps_eoy">€ 129.455</div><div class="ritmo-box-sub" id="rv_fps_eoy_pct">43,2%</div></div>
       </div>
-      <div style="margin-bottom:5px;display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--gray)">Avanzamento incassato</span><span style="font-weight:700;color:var(--red)" id="rv_fps_pct">12,8%</span></div>
+      <div style="margin-bottom:5px;display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--gray)">Avanzamento</span><span style="font-weight:700;color:var(--red)" id="rv_fps_pct">12,8%</span></div>
       <div class="pbar-wrap" style="height:10px"><div class="pbar-fill pbar-red" id="rv_fps_bar" style="width:12.8%"></div></div>
       <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div style="background:var(--blue-light);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase">Velocità necessaria</div><div style="font-size:18px;font-weight:700;color:var(--blue)" id="rv_fps_vel">€ 993/gg</div><div style="font-size:9px;color:var(--gray)">per chiudere il budget</div></div>
-        <div style="background:var(--red-light);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase">Importo/settimana</div><div style="font-size:18px;font-weight:700;color:var(--red)" id="rv_fps_imp_sett">€ 6.951</div><div style="font-size:9px;color:var(--gray)">necessario per recuperare</div></div>
+        <div style="background:var(--blue-light);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase">Velocità necessaria</div><div style="font-size:18px;font-weight:700;color:var(--blue)" id="rv_fps_vel">€ 993/gg</div></div>
+        <div style="background:var(--red-light);border-radius:8px;padding:10px"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase">Importo/settimana</div><div style="font-size:18px;font-weight:700;color:var(--red)" id="rv_fps_imp_sett">€ 6.951</div></div>
       </div>
     </div>
     <div class="card">
       <div class="card-title">🎯 Budget Gr Onorato — € 180.000 <span style="font-size:11px;font-weight:400;color:var(--gray)">(target 3%/sett)</span></div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-        <div class="ritmo-box green"><div class="ritmo-box-label">Incassato YTD</div><div class="ritmo-box-val green" style="font-size:16px" id="rv_ono_inc">€ 32.127</div><div class="ritmo-box-sub" id="rv_ono_pct_lbl">17,8% del budget</div></div>
+        <div class="ritmo-box green"><div class="ritmo-box-label">Incassato YTD</div><div class="ritmo-box-val green" style="font-size:16px" id="rv_ono_inc">€ 32.127</div><div class="ritmo-box-sub" id="rv_ono_pct_lbl">17,8%</div></div>
         <div class="ritmo-box red"><div class="ritmo-box-label">Gap al 31/12</div><div class="ritmo-box-val red" style="font-size:16px" id="rv_ono_gap">€ 147.873</div><div class="ritmo-box-sub">da recuperare</div></div>
-        <div class="ritmo-box orange"><div class="ritmo-box-label">Proiezione EOY</div><div class="ritmo-box-val orange" style="font-size:16px" id="rv_ono_eoy">€ 55.119</div><div class="ritmo-box-sub" id="rv_ono_eoy_pct">30,6% del budget</div></div>
+        <div class="ritmo-box orange"><div class="ritmo-box-label">Proiezione EOY</div><div class="ritmo-box-val orange" style="font-size:16px" id="rv_ono_eoy">€ 55.119</div><div class="ritmo-box-sub" id="rv_ono_eoy_pct">30,6%</div></div>
       </div>
-      <div style="margin-bottom:5px;display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--gray)">Avanzamento incassato</span><span style="font-weight:700;color:var(--orange)" id="rv_ono_pct">17,8%</span></div>
+      <div style="margin-bottom:5px;display:flex;justify-content:space-between;font-size:11px"><span style="color:var(--gray)">Avanzamento</span><span style="font-weight:700;color:var(--orange)" id="rv_ono_pct">17,8%</span></div>
       <div class="pbar-wrap" style="height:10px"><div class="pbar-fill pbar-orange" id="rv_ono_bar" style="width:17.8%"></div></div>
       <div style="margin-top:10px;background:var(--red-light);border:1px solid #FECACA;border-radius:10px;padding:12px;display:flex;align-items:center;gap:12px">
         <div style="font-size:28px" id="rv_ono_semaforo">🔴</div>
@@ -748,10 +732,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--n
   <div class="card" style="margin-bottom:14px">
     <div class="card-title">⚡ Indicatori chiave</div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-      <div style="background:var(--blue-light);border:1px solid #BFDBFE;border-radius:10px;padding:12px;text-align:center"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Polizze stimate al 31/12</div><div style="font-size:22px;font-weight:700;color:var(--blue)" id="rv_pol_stimate">210</div><div style="font-size:9px;color:var(--gray)">al ritmo attuale</div></div>
-      <div style="background:var(--orange-light);border:1px solid #FDE68A;border-radius:10px;padding:12px;text-align:center"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Premi stimati al 31/12</div><div style="font-size:22px;font-weight:700;color:var(--orange)" id="rv_premi_stim">€ 208.936</div><div style="font-size:9px;color:var(--gray)">proiezione lineare</div></div>
-      <div style="background:var(--green-light);border:1px solid #A7F3D0;border-radius:10px;padding:12px;text-align:center"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Incassi stimati al 31/12</div><div style="font-size:22px;font-weight:700;color:var(--green)" id="rv_inc_stim">€ 129.455</div><div style="font-size:9px;color:var(--gray)">al ritmo attuale</div></div>
-      <div style="background:var(--red-light);border:1px solid #FECACA;border-radius:10px;padding:12px;text-align:center"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Inc. medio/mese necessario</div><div style="font-size:22px;font-weight:700;color:var(--red)" id="rv_inc_mese">€ 32.712</div><div style="font-size:9px;color:var(--gray)">nei mesi restanti</div></div>
+      <div style="background:var(--blue-light);border:1px solid #BFDBFE;border-radius:10px;padding:12px;text-align:center"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Polizze stimate al 31/12</div><div style="font-size:22px;font-weight:700;color:var(--blue)" id="rv_pol_stimate">210</div></div>
+      <div style="background:var(--orange-light);border:1px solid #FDE68A;border-radius:10px;padding:12px;text-align:center"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Premi stimati al 31/12</div><div style="font-size:22px;font-weight:700;color:var(--orange)" id="rv_premi_stim">€ 208.936</div></div>
+      <div style="background:var(--green-light);border:1px solid #A7F3D0;border-radius:10px;padding:12px;text-align:center"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Incassi stimati al 31/12</div><div style="font-size:22px;font-weight:700;color:var(--green)" id="rv_inc_stim">€ 129.455</div></div>
+      <div style="background:var(--red-light);border:1px solid #FECACA;border-radius:10px;padding:12px;text-align:center"><div style="font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase;margin-bottom:4px">Inc. medio/mese necessario</div><div style="font-size:22px;font-weight:700;color:var(--red)" id="rv_inc_mese">€ 32.712</div></div>
     </div>
   </div>
   <div class="card">
@@ -1376,6 +1360,7 @@ function aggiornaConCSV(text) {
   if(lavT){lavT.innerHTML=''; buildLavorazione();}
   // Top player tables
   buildTopPlayerTables();
+  buildRitmoVendita();
 
   // ── Rigenera TUTTI i grafici ──
   Object.keys(Chart.instances).forEach(function(k){ Chart.instances[k].destroy(); });
@@ -1415,9 +1400,8 @@ function buildRitmoVendita() {
   var velNecFPS=gapFPS/giorniRes;
   var velAttOnoSett=velOno*7, targetSettOno=BUDGET_ONO*TARGET_SETT_PCT;
   var pctFPS=eoyFPS/BUDGET_FPS*100;
-  var velPolGiorn=totPol/giorniTr;
-  var polStim=Math.round(totPol+velPolGiorn*giorniRes);
-  var mesiRes=Math.max(1,12-( D.monthly?D.monthly.labels.length:4));
+  var polStim=Math.round(totPol+(totPol/giorniTr)*giorniRes);
+  var mesiRes=Math.max(1,12-(D.monthly?D.monthly.labels.length:4));
   function fmtN(n){return Math.round(n).toLocaleString('it-IT');}
   function fmtE(n){return '€ '+fmtN(n);}
   function fmtP(n){return n.toFixed(1)+'%';}
@@ -1436,13 +1420,14 @@ function buildRitmoVendita() {
   setT('rv_ono_eoy_pct',fmtP(eoyOno/BUDGET_ONO*100)+' del budget');
   setT('rv_ono_pct',fmtP(onoInc/BUDGET_ONO*100)); setW('rv_ono_bar',onoInc/BUDGET_ONO*100);
   setT('rv_ono_vel_sett',fmtE(Math.round(velAttOnoSett))+'/sett');
-  var semEl=document.getElementById('rv_ono_semaforo'), statoEl=document.getElementById('rv_ono_stato_txt');
-  var boxEl=semEl?semEl.closest('div[style*="border-radius:10px"]'):null;
+  var semEl=document.getElementById('rv_ono_semaforo');
+  var statoEl=document.getElementById('rv_ono_stato_txt');
+  var boxEl=document.getElementById('rv_ono_semaforo') ? document.getElementById('rv_ono_semaforo').parentElement.parentElement : null;
   if(velAttOnoSett>=targetSettOno){
     if(semEl)semEl.textContent='🟢'; if(statoEl)statoEl.textContent='In ritmo — target 3%/sett rispettato!';
     if(boxEl){boxEl.style.background='var(--green-light)';boxEl.style.border='1px solid #A7F3D0';}
   } else {
-    if(semEl)semEl.textContent='🔴'; if(statoEl)statoEl.textContent='Sotto ritmo — target 3%/sett = '+fmtE(Math.round(targetSettOno))+'/sett';
+    if(semEl)semEl.textContent='🔴'; if(statoEl)statoEl.textContent='Sotto ritmo — target = '+fmtE(Math.round(targetSettOno))+'/sett';
     if(boxEl){boxEl.style.background='var(--red-light)';boxEl.style.border='1px solid #FECACA';}
   }
   setT('rv_pol_stimate',polStim);
@@ -1451,13 +1436,13 @@ function buildRitmoVendita() {
   setT('rv_inc_mese',fmtE(Math.round(gapFPS/mesiRes)));
   var tbody=document.getElementById('rv_tbody'); if(!tbody||!D.monthly)return;
   tbody.innerHTML='';
-  var incMensili=[10407,7416,19581,900];
-  var targetProg=[25000,50000,75000,100000];
-  var incMedNec=[26327,28218,29177,32712];
+  var incM=[10407,7416,19581,900];
+  var tgtP=[25000,50000,75000,100000];
+  var incMN=[26327,28218,29177,32712];
   D.monthly.labels.forEach(function(mese,i){
-    var scost=(incMensili[i]||0)-(targetProg[i]||0);
+    var scost=(incM[i]||0)-(tgtP[i]||0);
     var tr=document.createElement('tr');
-    tr.innerHTML='<td><strong>'+mese+'</strong></td><td>'+(D.monthly.polizze[i]||0)+'</td><td>€ '+fmtN(D.monthly.premi_annui[i]||0)+'</td><td>€ '+fmtN(incMensili[i]||0)+'</td><td>€ '+fmtN(targetProg[i]||0)+'</td><td style="color:'+(scost>=0?'var(--green)':'var(--red)')+'">'+(scost>=0?'+':'')+fmtN(scost)+'</td><td>'+(scost>=0?'<span style="color:var(--green)">↑ In ritmo</span>':'<span style="color:var(--red)">↓ In ritardo</span>')+'</td><td>€ '+fmtN(incMedNec[i]||0)+'</td>';
+    tr.innerHTML='<td><strong>'+mese+'</strong></td><td>'+(D.monthly.polizze[i]||0)+'</td><td>€ '+fmtN(D.monthly.premi_annui[i]||0)+'</td><td>€ '+fmtN(incM[i]||0)+'</td><td>€ '+fmtN(tgtP[i]||0)+'</td><td style="color:'+(scost>=0?'var(--green)':'var(--red)')+'">'+(scost>=0?'+':'')+fmtN(scost)+'</td><td>'+(scost>=0?'<span style="color:var(--green)">↑ In ritmo</span>':'<span style="color:var(--red)">↓ In ritardo</span>')+'</td><td>€ '+fmtN(incMN[i]||0)+'</td>';
     tbody.appendChild(tr);
   });
 }
