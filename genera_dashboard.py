@@ -4,6 +4,7 @@ Legge l'Excel e genera docs/index.html
 Eseguito automaticamente da GitHub Actions ad ogni push dell'Excel.
 """
 import pandas as pd
+from datetime import datetime as _dt
 import json
 import math
 import base64
@@ -46,6 +47,14 @@ def isFB(v):
 
 def fe(v):
     v = 0 if (v is None or (isinstance(v, float) and (math.isnan(v) or math.isinf(v)))) else v
+    r = round(v)
+    # Format with dot as thousands separator: 1234 -> 1.234, 12345 -> 12.345
+    s = f"{r:,}".replace(",", ".")
+    return "\u20ac\u00a0" + s
+
+def fe_k(v):
+    """Formato migliaia con punto, es: € 2.265"""
+    v = 0 if (v is None or (isinstance(v, float) and (math.isnan(v) or math.isinf(v)))) else v
     return "€\u00a0" + f"{round(v):,}".replace(",", ".")
 
 def fn(v):
@@ -76,7 +85,7 @@ D = {}
 
 # KPI Generale
 kg = xl['📊 KPI Generale']
-r6, r10, r14 = kg.iloc[6].to_list(), kg.iloc[10].to_list(), kg.iloc[14].to_list()
+r6, r10, r14, r15 = kg.iloc[6].to_list(), kg.iloc[10].to_list(), kg.iloc[14].to_list(), kg.iloc[15].to_list()
 D['kpiGen'] = {
     'target': n(r6[3]), 'gap31dic': n(r6[6]),
     'polizze': ni(r10[1]), 'premioAnnuo': round(n(r10[2]), 2),
@@ -88,6 +97,11 @@ D['kpiGen'] = {
     'convRate': round(n(r14[5]), 4), 'callback': ni(r14[6]),
     'provv': round(n(r14[7]), 2), 'fbAttivi': ni(r14[8])
 }
+
+# Parse fbTot from string like '42% su 19 FB'
+import re as _re
+_fbt = _re.search(r'su\s+(\d+)', str(D['kpiGen'].get('fbTotStr','')))
+D['kpiGen']['fbTot'] = int(_fbt.group(1)) if _fbt else 19
 
 # KPI Backup
 kb_sheet = xl['💾 KPI Backup']
@@ -184,6 +198,31 @@ for i in range(3, 400):
             'fb': s(r[1]), 'cliente': s(r[2]), 'tipoPol': s(r[3]),
             'premioFirma': round(n(r[4]), 2), 'premioAnnuo': round(n(r[7]), 2)
         })
+
+# Challenge sheet
+ch_sheet = xl['🏁 Challenge']
+ch_rows = []
+try:
+    ch_inizio = ch_sheet.iloc[0].to_list()[6]  # Data inizio
+    ch_fine   = ch_sheet.iloc[1].to_list()[6]  # Data fine
+    ch_min_pol = s(ch_sheet.iloc[2].to_list()[6])
+    ch_min_pa  = s(ch_sheet.iloc[3].to_list()[6])
+    # Classifica
+    for i in range(5, 30):
+        r = ch_sheet.iloc[i].to_list()
+        if r[0] and str(r[0]) not in ('nan','') and str(r[0]).strip().isdigit():
+            ch_rows.append({'pos':s(r[0]),'name':s(r[1]),'pol':s(r[2]),'pa':s(r[3])})
+    # Partecipanti
+    ch_part = []
+    for i in range(6, 30):
+        r = ch_sheet.iloc[i].to_list()
+        if r[6] and str(r[6]) not in ('nan',''):
+            ch_part.append(s(r[6]))
+    ch_inizio_str = ch_inizio.strftime('%d/%m/%Y') if hasattr(ch_inizio,'strftime') else s(ch_inizio)
+    ch_fine_str   = ch_fine.strftime('%d/%m/%Y') if hasattr(ch_fine,'strftime') else s(ch_fine)
+except Exception as e:
+    ch_inizio_str = ch_fine_str = ch_min_pol = ch_min_pa = ''
+    ch_rows = []; ch_part = []
 
 # Ritmo Vendita
 rv_sheet = xl['📈 Ritmo Vendita 2026']
@@ -285,6 +324,25 @@ def smooth_svg(mb, values, color):
     return svg
 
 
+# Monthly incassato from Controllo Rate (cols 9-20 = Gen-Dic)
+MESI_COLS = {'GEN':9,'FEB':10,'MAR':11,'APR':12,'MAG':13,'GIU':14,'LUG':15,'AGO':16,'SET':17,'OTT':18,'NOV':19,'DIC':20}
+ct_sheet2 = xl['💳 Controllo Rate']
+inc_mese = []
+for m in MB:
+    col_idx = MESI_COLS.get(m, None)
+    if col_idx:
+        total = 0
+        for i in range(3, 300):
+            try:
+                r = ct_sheet2.iloc[i].to_list()
+                if r[1] and str(r[1]).strip() not in ('nan','') and r[1] != '#':
+                    v = n(r[col_idx])
+                    total += v if not math.isnan(v) else 0
+            except: break
+        inc_mese.append(round(total, 2))
+    else:
+        inc_mese.append(0)
+
 SVG_PA = smooth_svg(MB, pa_mese, "#0B1E3D")
 SVG_PI = smooth_svg(MB, pi_mese, "#2E8B5F")
 
@@ -312,7 +370,7 @@ PL_data = D['polLavorazione']
 pct_pi = round(G['premiIncassati'] / max(G['premioAnnuo'], 1) * 100)
 pol_lav_pa = sum(p['premioAnnuo'] for p in PL_data)
 fbA = sum(1 for k in KB.values() if k['statoAttivo'] == 'green')
-fbTot = sum(1 for k in KB.values() if k['statoAttivo'] != 'neutral')
+fbTot = 19
 pct_fba = round(fbA / max(fbTot, 1) * 100)
 pct_target = round(G['premiIncassati'] / max(G['target'], 1) * 100)
 pctO = round(ON['incassato'] / max(ON['obiettivo'], 1) * 100)
@@ -444,7 +502,7 @@ top3 = (rank_card("&#x1F4C5; Top5 &middot; Appt", "apptTot", False)
         + rank_card("&#x1F4BC; Top5 &middot; Incassati", "premiIncassati", True))
 
 # FB Summary cards
-nG = sum(1 for k in KB.values() if k['statoAttivo'] == 'green')
+nG = G.get('fbAttivi', sum(1 for k in KB.values() if k['statoAttivo'] == 'green'))
 nA = sum(1 for k in KB.values() if k['statoAttivo'] == 'amber')
 nR = sum(1 for k in KB.values() if k['statoAttivo'] == 'red')
 totPA = sum(k.get('premioAnnuo', 0) for k in KB.values())
@@ -498,6 +556,108 @@ top5 = (rank_card("&#x1F4C5; Top5 Appt", "apptTot", False)
         + rank_card("&#x1F4B6; Top5 Premio", "premioAnnuo", True)
         + rank_card("&#x1F4BC; Top5 Incassati", "premiIncassati", True))
 
+
+# ── OBJ SETTIMANALE ────────────────────────────────────────────────
+# Calcola % incassata settimanale approssimata
+inizio_anno = _dt(2026, 1, 1)
+oggi_dt = _dt.today()
+sett_tot = 52
+sett_pass = min(int((oggi_dt - inizio_anno).days / 7) + 1, 52)
+# Target progressivo settimanale
+target_sett_fps   = round(G['target'] * sett_pass / sett_tot, 2)
+target_sett_on    = round(ON['obiettivo'] * sett_pass / sett_tot, 2)
+pct_fps_sett      = round(G['premiIncassati'] / max(G['target'], 1) * 100, 1)
+pct_on_sett       = round(ON['incassato'] / max(ON['obiettivo'], 1) * 100, 1)
+pct_prog_fps      = round(G['premiIncassati'] / max(target_sett_fps, 1) * 100, 1)
+pct_prog_on       = round(ON['incassato'] / max(target_sett_on, 1) * 100, 1)
+gap_sett_fps      = round(target_sett_fps - G['premiIncassati'], 2)
+gap_sett_on       = round(target_sett_on - ON['incassato'], 2)
+
+obj_html = f'''<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+  <div class="card gold">
+    <p class="cl">&#x1F3AF; Obiettivo Personale FPS &mdash; Settimana {sett_pass}</p>
+    <p class="cv num">{pct_fps_sett}%</p>
+    <p class="csub">Incassato {fe(G["premiIncassati"])} su target {fe(G["target"])}</p>
+    <div style="margin-top:10px">
+      <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--mut);margin-bottom:4px">
+        <span>Target progressivo sett. {sett_pass}</span><span class="num">{fe(target_sett_fps)}</span>
+      </div>
+      <div style="background:var(--cream);border-radius:4px;height:10px;overflow:hidden">
+        <div style="height:100%;width:{min(pct_prog_fps,100)}%;background:{"linear-gradient(90deg,var(--gr),var(--gr2))" if pct_prog_fps>=100 else "linear-gradient(90deg,var(--amb),#F59E0B)" if pct_prog_fps>=70 else "linear-gradient(90deg,var(--red),#E74C3C)"};border-radius:4px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.7rem;margin-top:4px">
+        <span style="color:var(--mut)">{pct_prog_fps}% del target progressivo</span>
+        <span class="num" style="color:{"var(--gr)" if gap_sett_fps<=0 else "var(--red)"}">{"✅ In linea" if gap_sett_fps<=0 else f"Gap: {fe(gap_sett_fps)}"}</span>
+      </div>
+    </div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center">
+      {"".join(f'<div style="background:var(--cream);border-radius:6px;padding:8px 4px"><p style="font-size:.58rem;color:var(--mut);text-transform:uppercase;letter-spacing:.05em">Sett.{i+1}</p><p class="num" style="font-size:.85rem;color:var(--navy)">{fe(G["target"]*( (i+1)/52))}</p><p style="font-size:.58rem;color:var(--mut)">target</p></div>' for i in range(min(sett_pass,4)))}
+    </div>
+  </div>
+  <div class="card" style="border-top-color:var(--gold)">
+    <p class="cl">&#x1F3AF; Obiettivo Gruppo Onorato &mdash; Settimana {sett_pass}</p>
+    <p class="cv num">{pct_on_sett}%</p>
+    <p class="csub">Incassato {fe(ON["incassato"])} su target {fe(ON["obiettivo"])}</p>
+    <div style="margin-top:10px">
+      <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--mut);margin-bottom:4px">
+        <span>Target progressivo sett. {sett_pass}</span><span class="num">{fe(target_sett_on)}</span>
+      </div>
+      <div style="background:var(--cream);border-radius:4px;height:10px;overflow:hidden">
+        <div style="height:100%;width:{min(pct_prog_on,100)}%;background:{"linear-gradient(90deg,var(--gr),var(--gr2))" if pct_prog_on>=100 else "linear-gradient(90deg,var(--amb),#F59E0B)" if pct_prog_on>=70 else "linear-gradient(90deg,var(--red),#E74C3C)"};border-radius:4px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.7rem;margin-top:4px">
+        <span style="color:var(--mut)">{pct_prog_on}% del target progressivo</span>
+        <span class="num" style="color:{"var(--gr)" if gap_sett_on<=0 else "var(--red)"}">{"✅ In linea" if gap_sett_on<=0 else f"Gap: {fe(gap_sett_on)}"}</span>
+      </div>
+    </div>
+  </div>
+</div>'''
+
+# ── CHALLENGE HTML ──────────────────────────────────────────────────
+medals_ch = ['&#x1F947;','&#x1F948;','&#x1F949;'] + [f'{i}&#xB0;' for i in range(4,20)]
+ch_classifica = ""
+for i,r in enumerate(ch_rows):
+    pa_v = round(float(r['pa']),2) if r['pa'] else 0
+    pol_v = r['pol'] or '0'
+    is_winner = (int(r['pol'] or 0) >= int(ch_min_pol or 0) if ch_min_pol else False)
+    ch_classifica += f'<tr style="{"background:rgba(200,169,81,.08)" if is_winner else ""}"><td>{medals_ch[i]}</td><td><strong>{r["name"]}</strong>{"&nbsp;&#x1F3C6;" if is_winner else ""}</td><td class="num">{pol_v}</td><td class="num">{fe(pa_v)}</td></tr>'
+
+ch_part_html = "".join(f'<span style="display:inline-block;background:var(--cream);border-radius:6px;padding:4px 10px;font-size:.78rem;margin:3px">{p}</span>' for p in ch_part)
+
+# Obiettivi medaglia
+ch_obj_html = ""
+if ch_min_pol:
+    ch_obj_html += f'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:1.2rem">&#x1F4CB;</span><span style="font-size:.82rem"><strong>Polizze:</strong> &ge; {ch_min_pol}</span></div>'
+if ch_min_pa:
+    ch_obj_html += f'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.2rem">&#x1F4B6;</span><span style="font-size:.82rem"><strong>Premio Annuo:</strong> &ge; {fe(float(ch_min_pa) if ch_min_pa else 0)}</span></div>'
+
+challenge_html = f'''<div class="onc" style="border-top-color:#7C3AED">
+  <div class="onh"><h3>&#x1F3C1; Challenge Attiva &mdash; {ch_inizio_str} / {ch_fine_str}</h3><span>Fonte: Foglio Challenge</span></div>
+  <div style="padding:18px 20px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div class="tw" style="margin-bottom:0">
+          <div class="twh"><h3>&#x1F3C6; Classifica</h3><span>Solo partecipanti inclusi</span></div>
+          <table><thead><tr><th>#</th><th>Family Banker</th><th>Polizze</th><th>Premio Annuo</th></tr></thead>
+          <tbody>{ch_classifica}</tbody></table>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px;border-top-color:#7C3AED">
+          <p class="cl">&#x1F3AF; Obiettivi per vincere la medaglia</p>
+          <div style="margin-top:10px">{ch_obj_html}</div>
+        </div>
+        <div class="card" style="border-top-color:#7C3AED">
+          <p class="cl">&#x1F465; Partecipanti ({len(ch_part)})</p>
+          <div style="margin-top:8px">{ch_part_html}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>'''
+
+
+
 # Trend tables
 hdr_mesi = "".join(f"<th>{m}</th>" for m in MB)
 tPol = pol_mese
@@ -532,10 +692,17 @@ trend_appt_rows += (
     + f'<td><strong>{sum(tApp)}</strong></td></tr>'
 )
 
-tsum = "".join(
-    card(MB[i], fn(tPol[i]), f"pol &middot; {tApp[i]} appt", "gold", "&#x1F4C5;")
-    for i in range(len(mesi_raw))
-)
+def _tcard(i):
+    return (
+        f"<div class='card gold'>"
+        f"<div class='cico'>&#x1F4C5;</div>"
+        f"<p class='cl'>{MB[i]}</p>"
+        f"<p style='font-family:Outfit,sans-serif;font-size:1.25rem;font-weight:700;color:var(--navy);line-height:1.2;margin-bottom:4px'>{fe(pa_mese[i])} <span style='font-size:.65rem;color:var(--mut);font-weight:400'>PA</span></p>"
+        f"<p style='font-family:Outfit,sans-serif;font-size:1.25rem;font-weight:700;color:var(--gr);line-height:1.2;margin-bottom:6px'>{fe(pi_mese[i])} <span style='font-size:.65rem;color:var(--mut);font-weight:400'>Inc.</span></p>"
+        f"<p style='font-family:Outfit,sans-serif;font-size:.92rem;font-weight:600;color:var(--mut)'>{tPol[i]} pol &middot; {tApp[i]} appt</p>"
+        f"</div>"
+    )
+tsum = "".join(_tcard(i) for i in range(len(mesi_raw)))
 
 # Azioni
 critici = [nm for nm, kb in KB.items() if kb.get('statoAttivo') == 'red']
@@ -721,13 +888,190 @@ coll_json = json.dumps(coll_data, ensure_ascii=True)
 oggi = datetime.today().strftime('%d/%m/%Y')
 
 # ─── CSS ────────────────────────────────────────────────────────────
+
+# ─── CALCOLI OBJ SETTIMANALE E CHALLENGE ─────────────────────────────
+import re as _re2, datetime as _dt2
+from collections import defaultdict as _dd2
+import math as _math2
+
+# Carica xl se non già disponibile (alias)
+_xl = xl  # già caricato sopra
+
+# Weekly data dal Dati Giornalieri
+_weekly = _dd2(lambda: {"pa": 0.0, "pol": 0})
+for _r in D["giornalieri"]:
+    if _r["esito"] != "Sottoscritto":
+        continue
+    # La data è già una stringa dd/mm/yyyy o un oggetto
+    _dp = _r.get("dataPolizza", "")
+    if not _dp:
+        continue
+    try:
+        if isinstance(_dp, str) and len(_dp) >= 10:
+            _d = _dt2.datetime.strptime(_dp[:10], "%d/%m/%Y") if "/" in _dp else _dt2.datetime.strptime(_dp[:10], "%Y-%m-%d")
+        else:
+            continue
+        _wk = _d.isocalendar()[1]
+        _weekly[f"S.{_wk}"]["pa"] += _r["premioAnnuo"]
+        _weekly[f"S.{_wk}"]["pol"] += 1
+    except:
+        pass
+
+_sett_ord = sorted(_weekly.keys(), key=lambda x: int(_re2.search(r"\d+", x).group()))
+_tot_pa_w = sum(w["pa"] for w in _weekly.values())
+_tot_inc  = G["premiIncassati"]
+_tot_inc_on = ON["incassato"]
+_target_300 = G["target"]
+_target_180 = ON["obiettivo"]
+
+obj_rows_300 = ""
+obj_rows_180 = ""
+_cum_300 = 0.0
+_cum_180 = 0.0
+for _s in _sett_ord:
+    _w = _weekly[_s]
+    _frac = _w["pa"] / max(_tot_pa_w, 1)
+    _i300 = round(_frac * _tot_inc, 2)
+    _i180 = round(_frac * _tot_inc_on, 2)
+    _cum_300 += _i300
+    _cum_180 += _i180
+    _p300 = round(_cum_300 / max(_target_300, 1) * 100, 1)
+    _p180 = round(_cum_180 / max(_target_180, 1) * 100, 1)
+    _c300 = "#2E8B5F" if _p300 >= 25 else "#D97706" if _p300 >= 10 else "#C0392B"
+    _c180 = "#2E8B5F" if _p180 >= 25 else "#D97706" if _p180 >= 10 else "#C0392B"
+    _ps300 = round(_i300 / max(_target_300, 1) * 100, 2)  # % settimana singola
+    _ps180 = round(_i180 / max(_target_180, 1) * 100, 2)
+    _cs300 = "#2E8B5F" if _ps300 >= 1 else "#D97706" if _ps300 >= 0.5 else "#C0392B"
+    _cs180 = "#2E8B5F" if _ps180 >= 1 else "#D97706" if _ps180 >= 0.5 else "#C0392B"
+    obj_rows_300 += (
+        f"<tr><td>{_s}</td><td class='num'>{_w['pol']}</td>"
+        f"<td class='num'>{fe(_i300)}</td>"
+        f"<td><span class='num' style='font-size:.72rem;color:{_cs300};font-weight:700'>{_ps300}%</span></td>"
+        f"<td class='num'>{fe(_cum_300)}</td>"
+        f"<td><div style='display:flex;align-items:center;gap:5px'>"
+        f"<div style='flex:1;background:#FAF6EE;border-radius:3px;height:7px;overflow:hidden'>"
+        f"<div style='height:100%;width:{min(_p300,100)}%;background:{_c300};border-radius:3px'></div></div>"
+        f"<span class='num' style='font-size:.7rem;color:{_c300};font-weight:700'>{_p300}%</span>"
+        f"</div></td></tr>"
+    )
+    obj_rows_180 += (
+        f"<tr><td>{_s}</td><td class='num'>{_w['pol']}</td>"
+        f"<td class='num'>{fe(_i180)}</td>"
+        f"<td><span class='num' style='font-size:.72rem;color:{_cs180};font-weight:700'>{_ps180}%</span></td>"
+        f"<td class='num'>{fe(_cum_180)}</td>"
+        f"<td><div style='display:flex;align-items:center;gap:5px'>"
+        f"<div style='flex:1;background:#FAF6EE;border-radius:3px;height:7px;overflow:hidden'>"
+        f"<div style='height:100%;width:{min(_p180,100)}%;background:{_c180};border-radius:3px'></div></div>"
+        f"<span class='num' style='font-size:.7rem;color:{_c180};font-weight:700'>{_p180}%</span>"
+        f"</div></td></tr>"
+    )
+
+tot_pol_obj = sum(_w["pol"] for _w in _weekly.values())
+fe_tot_inc_300 = fe(_tot_inc)
+fe_tot_inc_180 = fe(_tot_inc_on)
+fe_target_300  = fe(_target_300)
+fe_target_180  = fe(_target_180)
+pct_fin_300 = round(_tot_inc / max(_target_300, 1) * 100, 1)
+pct_fin_180 = round(_tot_inc_on / max(_target_180, 1) * 100, 1)
+col_fin_300 = "#2E8B5F" if pct_fin_300 >= 25 else "#D97706" if pct_fin_300 >= 10 else "#C0392B"
+col_fin_180 = "#2E8B5F" if pct_fin_180 >= 25 else "#D97706" if pct_fin_180 >= 10 else "#C0392B"
+
+# ─── CHALLENGE ────────────────────────────────────────────────────────
+_ch = _xl["🏁 Challenge"]
+_ch_r = [_ch.iloc[i].to_list() for i in range(25)]
+ch_periodo = s(_ch_r[2][1]) if _ch_r[2][1] else "N/D"
+ch_min_pol = ni(_ch_r[2][6])
+ch_min_pa  = n(_ch_r[3][6])
+
+ch_partecipanti = []
+for _i in range(6, 25):
+    try:
+        _nm = s(_ch_r[_i][6])
+        if _nm and _nm != "nan" and isFB(_nm):
+            ch_partecipanti.append(_nm)
+    except:
+        pass
+
+ch_classifica = []
+for _i in range(5, 22):
+    try:
+        _r2 = _ch_r[_i]
+        _fb = s(_r2[1])
+        if _fb and isFB(_fb):
+            ch_classifica.append({"pos": s(_r2[0]), "fb": _fb, "pol": ni(_r2[2]), "pa": n(_r2[3])})
+    except:
+        pass
+
+_medals_ch = ["&#x1F947;","&#x1F948;","&#x1F949;"] + [f"{_i2}&#xB0;" for _i2 in range(4,20)]
+ch_rows = ""
+for _i, _row in enumerate(ch_classifica):
+    _vp = ch_min_pol > 0 and _row["pol"] >= ch_min_pol
+    _va = ch_min_pa  > 0 and _row["pa"]  >= ch_min_pa
+    _vince = _vp and (ch_min_pa == 0 or _va)
+    _bg = "background:linear-gradient(90deg,rgba(200,169,81,.1),transparent)" if _vince else ""
+    _bp = tag("tg", f"&#x2713; {_row['pol']} pol.") if _vp else tag("tr2" if _row["pol"]==0 else "ta", f"{_row['pol']} pol.")
+    _ba = tag("tg", f"&#x2713; {fe(_row['pa'])}") if _va else tag("tr2" if _row["pa"]==0 else "ta", fe(_row["pa"]))
+    _stato = "&#x1F3C6; Vincitore" if _vince else ("&#x23F3; In corsa" if _row["pol"]>0 else "&#x274C; Nessuna pol.")
+    ch_rows += (
+        f"<tr style='{_bg}'>"
+        f"<td>{_medals_ch[_i] if _i<len(_medals_ch) else _i+1}</td>"
+        f"<td><strong>{_row['fb']}</strong></td>"
+        f"<td>{_bp}</td><td>{_ba}</td>"
+        f"<td style='font-size:.8rem'>{_stato}</td></tr>"
+    )
+
+n_partecipanti = len(ch_partecipanti)
+ch_pills = "".join(
+    f"<span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>{_nm}</span>"
+    for _nm in ch_partecipanti
+)
+
+# Variabili per form interattivo
+import datetime as _dt3
+def _fmt_date(v):
+    if hasattr(v, "strftime"): return v.strftime("%Y-%m-%d")
+    try:
+        s2 = str(v)[:10]
+        return s2 if len(s2)==10 else ""
+    except: return ""
+
+ch_inizio_val = _fmt_date(_ch_r[0][6])
+ch_fine_val   = _fmt_date(_ch_r[1][6])
+ch_min_pa_val = int(ch_min_pa) if ch_min_pa > 0 else 0
+
+# Checkboxes per tutti i FB
+ch_checkboxes = ""
+for _c2 in D["collaboratori"]:
+    _nm2 = _c2["name"]
+    _checked = "checked" if _nm2 in ch_partecipanti else ""
+    ch_checkboxes += (
+        f"<label style='display:inline-flex;align-items:center;gap:5px;background:{'var(--cream)' if not _checked else 'rgba(200,169,81,.15)'};border:1px solid {'var(--brd)' if not _checked else 'var(--gold)'};border-radius:20px;padding:4px 10px;cursor:pointer;font-size:.75rem;user-select:none'>"
+        f"<input type='checkbox' {'checked' if _checked else ''} value='{_nm2}' onchange='updateChallenge()' style='accent-color:var(--gold)'>"
+        f"{_nm2}</label>"
+    )
+ch_badge_pol = (tag("bb", f"Min. Polizze: {ch_min_pol}") if ch_min_pol > 0 else "")
+ch_badge_pa  = (tag("bn", f"Min. Premio: {fe(ch_min_pa)}") if ch_min_pa > 0 else "")
+ch_obj_details = ""
+if ch_min_pol > 0:
+    ch_obj_details += f"<p style='font-size:.8rem;margin-bottom:6px'>&#x1F4CB; <strong>Polizze minime:</strong> {ch_min_pol}</p>"
+if ch_min_pa > 0:
+    ch_obj_details += f"<p style='font-size:.8rem'>&#x1F4B6; <strong>Premio annuo minimo:</strong> {fe(ch_min_pa)}</p>"
+if not ch_obj_details:
+    ch_obj_details = "<p style='font-size:.8rem;color:#64748B'>Nessun obiettivo impostato</p>"
+
+# JSON per JS interattivo
+import json as _json2
+ch_dati_json  = _json2.dumps(ch_classifica, ensure_ascii=True)
+ch_originali_json = _json2.dumps(ch_partecipanti, ensure_ascii=True)
+ch_min_pa_val_js = int(ch_min_pa) if ch_min_pa > 0 else 0
+
 CSS = """
 :root{--navy:#0B1E3D;--n2:#142952;--n3:#1E3A6E;--gold:#C8A951;--g2:#E8CC7A;--cream:#FAF6EE;--w:#fff;--gr:#2E8B5F;--gr2:#3BA870;--red:#C0392B;--amb:#D97706;--mut:#64748B;--brd:rgba(200,169,81,.2);--sh:0 2px 14px rgba(11,30,61,.07);--sh2:0 6px 28px rgba(11,30,61,.13)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy)}
 .num{font-family:'Outfit',sans-serif;font-weight:600}
-.hdr{background:linear-gradient(135deg,var(--navy),var(--n3));padding:16px 36px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.25)}
-.hdr h1{font-family:'Playfair Display',serif;color:var(--g2);font-size:1.35rem;font-weight:600}
+.hdr{background:linear-gradient(135deg,var(--navy),var(--n3));padding:14px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.25);gap:16px}
+.hdr h1{font-family:'Playfair Display',serif;color:var(--g2);font-size:1.45rem;font-weight:700;line-height:1}
 .hdr p{color:rgba(255,255,255,.42);font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
 .nav{display:flex;gap:4px;flex-wrap:wrap}
 .nb{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);color:rgba(255,255,255,.68);padding:6px 14px;border-radius:4px;cursor:pointer;font-size:.74rem;font-family:'DM Sans',sans-serif;transition:all .18s}
@@ -865,14 +1209,20 @@ HTML = f"""<!DOCTYPE html>
 <style>{CSS}</style>
 </head>
 <body>
-<header class="hdr">
-  <div><h1>&#x1F6E1;&#xFE0F; Family Protection Specialist</h1>
-  <p>Dashboard KPI 2026 &mdash; Aggiornato il {oggi} &mdash; {EXCEL}</p></div>
-  <nav class="nav">
+<header class="hdr" style="gap:16px">
+  <div style="flex-shrink:0;line-height:1.2">
+    <div style="font-family:'Playfair Display',serif;color:var(--g2);font-size:1.25rem;font-weight:600;letter-spacing:.01em">&#x1F6E1;&#xFE0F; Dashboard</div>
+    <div style="font-family:'Playfair Display',serif;color:var(--g2);font-size:1.25rem;font-weight:400;font-style:italic;letter-spacing:.02em">FPS Maola Daniele</div>
+    <div style="font-family:'Playfair Display',serif;color:var(--g2);font-size:.82rem;font-weight:400;font-style:italic;letter-spacing:.02em;margin-top:2px;opacity:.85">&ldquo;Non c&rsquo;&egrave; Pianificazione senza Protezione&rdquo;</div>
+  </div>
+  <nav class="nav" style="flex:1;justify-content:flex-end;align-items:center">
     <button class="nb on" onclick="showSec('ov')">KPI Generale</button>
     <button class="nb" onclick="showSec('fb')">KPI Family Banker</button>
     <button class="nb" onclick="showSec('tr')">Andamento Mensile</button>
+    <button class="nb" onclick="showSec('obj')">&#x1F4C8; Obiettivi</button>
+    <button class="nb" onclick="showSec('ch')">&#x1F3C6; Challenge</button>
     <button class="nb" onclick="showSec('az')">Azioni Correttive</button>
+    <span style="color:rgba(255,255,255,.35);font-size:.62rem;letter-spacing:.05em;white-space:nowrap;margin-left:4px">Agg. {oggi}</span>
   </nav>
 </header>
 <div class="wrap">
@@ -956,6 +1306,112 @@ HTML = f"""<!DOCTYPE html>
   </div>
 </section>
 
+<section class="sec" id="s-obj">
+  <p class="st">&#x1F4C8; Obiettivi Settimanali 2026</p>
+  <p class="ss">Avanzamento incasso settimanale vs target &middot; Stima proporzionale al premio annuo</p>
+  <div class="g2">
+    <div class="tw">
+      <div class="twh"><h3>&#x1F3AF; Budget Personale &mdash; Target {fe_target_300}</h3><span>Settimana per settimana</span></div>
+      <table><thead><tr><th>Sett.</th><th>Pol.</th><th>Inc. Sett.</th><th>% Sett.</th><th>Cumulato</th><th>% Cum.</th></tr></thead>
+      <tbody>{obj_rows_300}</tbody>
+      <tfoot><tr style="background:rgba(11,30,61,.06);font-weight:600">
+        <td>TOTALE</td><td class="num">{tot_pol_obj}</td>
+        <td class="num">{fe_tot_inc_300}</td><td></td>
+        <td class="num">{fe_tot_inc_300}</td>
+        <td><span class="num" style="color:{col_fin_300};font-weight:700">{pct_fin_300}%</span></td>
+      </tr></tfoot>
+    </table></div>
+    <div class="tw">
+      <div class="twh"><h3>&#x1F465; Gruppo Onorato &mdash; Target {fe_target_180}</h3><span>Settimana per settimana</span></div>
+      <table><thead><tr><th>Sett.</th><th>Pol.</th><th>Inc. Sett.</th><th>% Sett.</th><th>Cumulato</th><th>% Cum.</th></tr></thead>
+      <tbody>{obj_rows_180}</tbody>
+      <tfoot><tr style="background:rgba(11,30,61,.06);font-weight:600">
+        <td>TOTALE</td><td class="num">{tot_pol_obj}</td>
+        <td class="num">{fe_tot_inc_180}</td><td></td>
+        <td class="num">{fe_tot_inc_180}</td>
+        <td><span class="num" style="color:{col_fin_180};font-weight:700">{pct_fin_180}%</span></td>
+      </tr></tfoot>
+    </table></div>
+  </div>
+</section>
+
+<section class="sec" id="s-ch">
+  <p class="st">&#x1F3C6; Challenge</p>
+  <p class="ss">Configura partecipanti, periodo e obiettivi &middot; Classifica da Excel</p>
+
+  <!-- CONFIGURATORE CHALLENGE -->
+  <div class="tw" style="margin-bottom:16px">
+    <div class="twh"><h3>&#x2699;&#xFE0F; Configura Nuova Challenge</h3><span>Seleziona parametri e aggiorna Excel per salvare</span></div>
+    <div style="padding:20px 22px">
+      <div class="g3" style="margin-bottom:16px">
+        <div>
+          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Data Inizio</p>
+          <input type="date" id="ch-inizio" value="{ch_inizio_val}"
+            style="width:100%;padding:8px 10px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--cream);color:var(--navy)">
+        </div>
+        <div>
+          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Data Fine</p>
+          <input type="date" id="ch-fine" value="{ch_fine_val}"
+            style="width:100%;padding:8px 10px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--cream);color:var(--navy)">
+        </div>
+        <div>
+          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Obiettivi per Vincere</p>
+          <div style="display:flex;gap:8px">
+            <div style="flex:1">
+              <label style="font-size:.68rem;color:var(--mut)">Min. Polizze</label>
+              <input type="number" id="ch-min-pol" value="{ch_min_pol}" min="0"
+                style="width:100%;padding:6px 8px;border:1px solid var(--brd);border-radius:5px;font-size:.82rem;background:var(--cream);margin-top:3px">
+            </div>
+            <div style="flex:1">
+              <label style="font-size:.68rem;color:var(--mut)">Min. Premio (€)</label>
+              <input type="number" id="ch-min-pa" value="{ch_min_pa_val}" min="0" step="100"
+                style="width:100%;padding:6px 8px;border:1px solid var(--brd);border-radius:5px;font-size:.82rem;background:var(--cream);margin-top:3px">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:8px">Partecipanti — seleziona chi include nella challenge</p>
+        <div id="ch-partecipanti" style="display:flex;flex-wrap:wrap;gap:6px">
+          {ch_checkboxes}
+        </div>
+      </div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--brd);display:flex;gap:10px;align-items:center">
+        <button onclick="resetChallenge()"
+          style="padding:8px 20px;background:var(--cream);border:1px solid var(--brd);border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.8rem;color:var(--navy)">
+          &#x21BA; Reset selezione Excel
+        </button>
+        <p style="font-size:.72rem;color:var(--mut)">&#x2139;&#xFE0F; La classifica viene sempre letta dall'Excel. Questo configuratore mostra un'anteprima dei partecipanti selezionati.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="tw">
+      <div class="twh"><h3>&#x1F4CA; Classifica Challenge</h3><span id="ch-periodo-lbl">{ch_periodo}</span></div>
+      <div style="padding:10px 18px;background:var(--cream);border-bottom:1px solid var(--brd);display:flex;gap:16px;flex-wrap:wrap">
+        {ch_badge_pol}
+        {ch_badge_pa}
+      </div>
+      <table><thead><tr><th>Pos.</th><th>Family Banker</th><th>Polizze</th><th>Premio Annuo</th><th>Stato</th></tr></thead>
+      <tbody id="ch-classifica">{ch_rows}</tbody></table>
+    </div>
+    <div>
+      <div class="tw">
+        <div class="twh"><h3>&#x1F465; Partecipanti Selezionati</h3><span id="ch-n-part">{n_partecipanti} selezionati</span></div>
+        <div id="ch-pills-box" style="padding:14px 18px;line-height:2">{ch_pills}</div>
+      </div>
+      <div class="card gold" style="margin-top:0">
+        <div class="cico">&#x1F3C6;</div>
+        <p class="cl">Obiettivi per vincere</p>
+        <div style="margin-top:8px" id="ch-obj-box">
+          {ch_obj_details}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 </div>
 <footer style="background:var(--navy);color:rgba(255,255,255,.3);text-align:center;padding:14px;font-size:.65rem;letter-spacing:.05em;border-top:1px solid var(--gold)">
   <span style="color:var(--gold)">FAMILY PROTECTION SPECIALIST</span> &nbsp;&middot;&nbsp; Dashboard KPI 2026 &nbsp;&middot;&nbsp; Aggiornato il {oggi} &nbsp;&middot;&nbsp; Uso interno riservato
@@ -967,14 +1423,94 @@ function showSec(id) {{
   document.querySelectorAll('.sec').forEach(function(s){{s.classList.remove('on');}});
   document.querySelectorAll('.nb').forEach(function(b){{b.classList.remove('on');}});
   document.getElementById('s-'+id).classList.add('on');
-  var idx={{ov:0,fb:1,tr:2,az:3}}[id];
-  document.querySelectorAll('.nb')[idx].classList.add('on');
+  var idx={{ov:0,fb:1,tr:2,obj:3,ch:4,az:5}}[id];
+  if(idx!==undefined) document.querySelectorAll('.nb')[idx].classList.add('on');
 }}
 function showColl(name) {{
   var body=document.getElementById('collb');
   if(!name){{body.innerHTML='<div class="collph">Seleziona un Family Banker per la scheda completa del colloquio</div>';return;}}
   body.innerHTML=COLLDATA[name]||'<div class="collph">Dati non disponibili</div>';
 }}
+
+// ─── CHALLENGE INTERATTIVA ───────────────────────────────────────────
+var CH_DATI = {ch_dati_json};
+
+function updateChallenge() {{
+  // Partecipanti selezionati
+  var sel = [];
+  document.querySelectorAll('#ch-partecipanti input[type=checkbox]:checked').forEach(function(cb){{sel.push(cb.value);}});
+  
+  // Aggiorna pills
+  var pillsBox = document.getElementById('ch-pills-box');
+  if(pillsBox) pillsBox.innerHTML = sel.map(function(nm){{
+    return "<span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>"+nm+"</span>";
+  }}).join('');
+  document.getElementById('ch-n-part').textContent = sel.length + ' selezionati';
+
+  // Obiettivi
+  var minPol = parseInt(document.getElementById('ch-min-pol').value)||0;
+  var minPa  = parseFloat(document.getElementById('ch-min-pa').value)||0;
+
+  // Aggiorna obj box
+  var objBox = document.getElementById('ch-obj-box');
+  var objHtml = '';
+  if(minPol>0) objHtml += "<p style='font-size:.8rem;margin-bottom:6px'>&#x1F4CB; <strong>Polizze minime:</strong> "+minPol+"</p>";
+  if(minPa>0)  objHtml += "<p style='font-size:.8rem'>&#x1F4B6; <strong>Premio annuo minimo:</strong> &#x20AC;&#x00A0;"+Math.round(minPa).toLocaleString('it-IT')+"</p>";
+  if(!objHtml) objHtml = "<p style='font-size:.8rem;color:#64748B'>Nessun obiettivo impostato</p>";
+  if(objBox) objBox.innerHTML = objHtml;
+
+  // Periodo
+  var ini  = document.getElementById('ch-inizio').value;
+  var fine = document.getElementById('ch-fine').value;
+  var periodoLbl = ini && fine ? ini.split('-').reverse().join('/') + ' - ' + fine.split('-').reverse().join('/') : '';
+  var pl = document.getElementById('ch-periodo-lbl');
+  if(pl && periodoLbl) pl.textContent = periodoLbl;
+
+  // Filtra e ordina classifica solo per i selezionati
+  var filtrati = CH_DATI.filter(function(r){{return sel.indexOf(r.fb)>=0;}});
+  filtrati.sort(function(a,b){{return b.pa-a.pa || b.pol-a.pol;}});
+  
+  var medals = ['&#x1F947;','&#x1F948;','&#x1F949;'];
+  var tbody = document.getElementById('ch-classifica');
+  if(!tbody) return;
+  tbody.innerHTML = filtrati.map(function(row, i){{
+    var vp = minPol>0 && row.pol>=minPol;
+    var va = minPa>0 && row.pa>=minPa;
+    var vince = vp && (minPa===0 || va);
+    var bg = vince ? "background:linear-gradient(90deg,rgba(200,169,81,.1),transparent)" : "";
+    var bpol = vp ? "<span class='tag tg'>&#x2713; "+row.pol+" pol.</span>" : (row.pol>0 ? "<span class='tag ta'>"+row.pol+" pol.</span>" : "<span class='tag tr2'>0 pol.</span>");
+    var bpa  = va  ? "<span class='tag tg'>&#x2713; &#x20AC;&#x00A0;"+Math.round(row.pa).toLocaleString('it-IT')+"</span>" : (row.pa>0 ? "<span class='tag ta'>&#x20AC;&#x00A0;"+Math.round(row.pa).toLocaleString('it-IT')+"</span>" : "<span class='tag tr2'>&#x20AC;&#x00A0;0</span>");
+    var stato = vince ? "&#x1F3C6; Vincitore" : (row.pol>0 ? "&#x23F3; In corsa" : "&#x274C; Nessuna pol.");
+    var med = i<3 ? medals[i] : (i+1)+"&#xB0;";
+    return "<tr style='"+bg+"'><td>"+med+"</td><td><strong>"+row.fb+"</strong></td><td>"+bpol+"</td><td>"+bpa+"</td><td style='font-size:.8rem'>"+stato+"</td></tr>";
+  }}).join('');
+
+  // Stile checkbox
+  document.querySelectorAll('#ch-partecipanti label').forEach(function(lbl){{
+    var cb = lbl.querySelector('input');
+    if(cb.checked) {{
+      lbl.style.background='rgba(200,169,81,.15)';
+      lbl.style.borderColor='var(--gold)';
+    }} else {{
+      lbl.style.background='var(--cream)';
+      lbl.style.borderColor='var(--brd)';
+    }}
+  }});
+}}
+
+function resetChallenge() {{
+  // Ripristina partecipanti originali da Excel
+  var originali = {ch_originali_json};
+  document.querySelectorAll('#ch-partecipanti input[type=checkbox]').forEach(function(cb){{
+    cb.checked = originali.indexOf(cb.value) >= 0;
+  }});
+  document.getElementById('ch-min-pol').value = '{ch_min_pol}';
+  document.getElementById('ch-min-pa').value = '{ch_min_pa_val_js}';
+  updateChallenge();
+}}
+
+// Init challenge al caricamento
+document.addEventListener('DOMContentLoaded', function(){{ updateChallenge(); }});
 </script>
 </body></html>"""
 
@@ -985,3 +1521,4 @@ with open('docs/index.html', 'w', encoding='utf-8') as f:
 print(f"✅ Dashboard generata: docs/index.html ({len(HTML):,} caratteri)")
 print(f"   Polizze: {G['polizze']}, Premi Incassati: {fe(G['premiIncassati'])}")
 print(f"   Aggiornato il: {oggi}")
+
