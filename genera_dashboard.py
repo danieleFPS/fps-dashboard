@@ -1119,8 +1119,13 @@ try:
         _dp2 = _ws2.cell(_rn, 7).value
         if not isinstance(_dp2, _dt2.datetime): continue
         if not (_LON_START <= _dp2 <= _LON_END): continue
-        _fb2 = str(_fb2).strip()
-        _pf2 = float(_ws2.cell(_rn, 5).value or 0)
+        _fb2  = str(_fb2).strip()
+        _pf2  = float(_ws2.cell(_rn, 5).value or 0)
+        _tip2 = str(_ws2.cell(_rn, 4).value or '').strip()
+        # Escludi: Protezione Assistenza sempre
+        #          Protezione Casa e Famiglia con premio <= 250€
+        if _tip2 == 'Protezione Assistenza': continue
+        if _tip2 == 'Protezione Casa e Famiglia' and _pf2 <= 250: continue
         _lon_pol[_fb2] = _lon_pol.get(_fb2, 0) + 1
         if _ws2.cell(_rn, 14).value == '✓':
             _lon_inc[_fb2] = _lon_inc.get(_fb2, 0.0) + _pf2
