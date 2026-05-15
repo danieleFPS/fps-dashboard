@@ -1391,6 +1391,59 @@ HTML = f"""<!DOCTYPE html>
     <tbody>{fb_rows}</tbody></table></div>
   </div>
   <div class="g3">{top5}</div>
+
+  <!-- ANALISI PRODUZIONE PERSONALIZZATA -->
+  <div class="tw" id="prod-widget" style="margin-top:20px">
+    <div class="twh"><h3>&#x1F50D; Analisi Produzione Personalizzata</h3><span>Seleziona FB, periodo e metriche</span></div>
+    <div style="padding:18px 22px">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end">
+        <div style="flex:2;min-width:220px">
+          <p style="font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Family Banker (uno o pi&#xF9;)</p>
+          <div id="prod-fb-pills" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--cream);border:1px solid var(--brd);border-radius:7px;min-height:42px;cursor:pointer" onclick="toggleProdFbDropdown()">
+            <span id="prod-fb-placeholder" style="color:var(--mut);font-size:.8rem;align-self:center">Clicca per selezionare...</span>
+          </div>
+          <div id="prod-fb-dropdown" style="display:none;position:absolute;z-index:200;background:var(--w);border:1px solid var(--brd);border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.12);padding:8px;max-height:260px;overflow-y:auto;width:300px">
+            <div style="display:flex;gap:6px;padding:4px 0 8px">
+              <button onclick="prodSelectAll()" style="font-size:.7rem;padding:3px 8px;border:1px solid var(--brd);border-radius:4px;background:var(--cream);cursor:pointer">Tutti</button>
+              <button onclick="prodSelectNone()" style="font-size:.7rem;padding:3px 8px;border:1px solid var(--brd);border-radius:4px;background:var(--cream);cursor:pointer">Nessuno</button>
+            </div>
+            <div id="prod-fb-checkboxes"></div>
+          </div>
+        </div>
+        <div style="flex:1;min-width:130px">
+          <p style="font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Dal</p>
+          <input type="date" id="prod-dal" style="width:100%;padding:8px 10px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--cream);color:var(--navy)">
+        </div>
+        <div style="flex:1;min-width:130px">
+          <p style="font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Al</p>
+          <input type="date" id="prod-al" style="width:100%;padding:8px 10px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--cream);color:var(--navy)">
+        </div>
+        <div>
+          <button onclick="runProdAnalysis()" style="padding:9px 22px;background:var(--navy);color:#fff;border:none;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap">&#x1F50D; Analizza</button>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <p style="font-size:.63rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:8px">Metriche da mostrare</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px" id="prod-metrics">
+          <label style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--cream);border:1px solid var(--brd);border-radius:20px;cursor:pointer;font-size:.78rem"><input type="checkbox" value="pa" checked> Premio Annuo</label>
+          <label style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--cream);border:1px solid var(--brd);border-radius:20px;cursor:pointer;font-size:.78rem"><input type="checkbox" value="inc" checked> Incassato</label>
+          <label style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--cream);border:1px solid var(--brd);border-radius:20px;cursor:pointer;font-size:.78rem"><input type="checkbox" value="pol" checked> N&#xB0; Polizze</label>
+          <label style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--cream);border:1px solid var(--brd);border-radius:20px;cursor:pointer;font-size:.78rem"><input type="checkbox" value="appt" checked> N&#xB0; Appuntamenti</label>
+          <label style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--cream);border:1px solid var(--brd);border-radius:20px;cursor:pointer;font-size:.78rem"><input type="checkbox" value="cb"> N&#xB0; Callback</label>
+          <label style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--cream);border:1px solid var(--brd);border-radius:20px;cursor:pointer;font-size:.78rem"><input type="checkbox" value="lav"> Polizze in Lavorazione</label>
+          <label style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--cream);border:1px solid var(--brd);border-radius:20px;cursor:pointer;font-size:.78rem"><input type="checkbox" value="conv"> % Conversione</label>
+          <label style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--cream);border:1px solid var(--brd);border-radius:20px;cursor:pointer;font-size:.78rem"><input type="checkbox" value="med"> Premio Medio</label>
+        </div>
+      </div>
+      <div id="prod-results" style="display:none">
+        <div id="prod-kpi-cards" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px"></div>
+        <div style="overflow-x:auto"><table><thead id="prod-thead"></thead><tbody id="prod-tbody"></tbody></table></div>
+        <p id="prod-note" style="font-size:.68rem;color:var(--mut);margin-top:8px"></p>
+      </div>
+      <div id="prod-empty" style="text-align:center;padding:24px;color:var(--mut);font-size:.82rem;font-style:italic">Seleziona i Family Banker, il periodo e le metriche, poi clicca Analizza.</div>
+    </div>
+  </div>
+
 </section>
 
 <section class="sec" id="s-tr">
@@ -1464,212 +1517,6 @@ HTML = f"""<!DOCTYPE html>
   <div id="ch-standard">
   <!-- CONFIGURATORE CHALLENGE -->
   <div class="tw" style="margin-bottom:16px">
-    <div class="twh"><h3>&#x2699;&#xFE0F; Configura Nuova Challenge</h3><span>Seleziona parametri e aggiorna Excel per salvare</span></div>
-    <div style="padding:20px 22px">
-      <div class="g3" style="margin-bottom:16px">
-        <div>
-          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Data Inizio</p>
-          <input type="date" id="ch-inizio" value="{ch_inizio_val}"
-            style="width:100%;padding:8px 10px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--cream);color:var(--navy)">
-        </div>
-        <div>
-          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Data Fine</p>
-          <input type="date" id="ch-fine" value="{ch_fine_val}"
-            style="width:100%;padding:8px 10px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--cream);color:var(--navy)">
-        </div>
-        <div>
-          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Obiettivi per Vincere</p>
-          <div style="display:flex;gap:8px">
-            <div style="flex:1">
-              <label style="font-size:.68rem;color:var(--mut)">Min. Polizze</label>
-              <input type="number" id="ch-min-pol" value="{ch_min_pol}" min="0"
-                style="width:100%;padding:6px 8px;border:1px solid var(--brd);border-radius:5px;font-size:.82rem;background:var(--cream);margin-top:3px">
-            </div>
-            <div style="flex:1">
-              <label style="font-size:.68rem;color:var(--mut)">Min. Premio (€)</label>
-              <input type="number" id="ch-min-pa" value="{ch_min_pa_val}" min="0" step="100"
-                style="width:100%;padding:6px 8px;border:1px solid var(--brd);border-radius:5px;font-size:.82rem;background:var(--cream);margin-top:3px">
-            </div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:8px">Partecipanti — seleziona chi include nella challenge</p>
-        <div id="ch-partecipanti" style="display:flex;flex-wrap:wrap;gap:6px">
-          {ch_checkboxes}
-        </div>
-      </div>
-      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--brd);display:flex;gap:10px;align-items:center">
-        <button onclick="resetChallenge()"
-          style="padding:8px 20px;background:var(--cream);border:1px solid var(--brd);border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.8rem;color:var(--navy)">
-          &#x21BA; Reset selezione Excel
-        </button>
-        <p style="font-size:.72rem;color:var(--mut)">&#x2139;&#xFE0F; La classifica viene sempre letta dall'Excel. Questo configuratore mostra un'anteprima dei partecipanti selezionati.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="g2" style="align-items:start">
-    <div class="tw">
-      <div class="twh"><h3>&#x1F4CA; Classifica Challenge</h3><span id="ch-periodo-lbl">{ch_periodo}</span></div>
-      <div style="padding:10px 18px;background:var(--cream);border-bottom:1px solid var(--brd);display:flex;gap:16px;flex-wrap:wrap">
-        {ch_badge_pol}
-        {ch_badge_pa}
-      </div>
-      <table><thead><tr><th>Pos.</th><th>Family Banker</th><th>Polizze</th><th>Premio Annuo</th><th>Stato</th></tr></thead>
-      <tbody id="ch-classifica">{ch_rows}</tbody></table>
-    </div>
-    <div>
-      <div class="tw">
-        <div class="twh"><h3>&#x1F465; Partecipanti Selezionati</h3><span id="ch-n-part">{n_partecipanti} selezionati</span></div>
-        <div id="ch-pills-box" style="padding:14px 18px;line-height:2">{ch_pills}</div>
-      </div>
-      <div class="card gold" style="margin-top:0">
-        <div class="cico">&#x1F3C6;</div>
-        <p class="cl">Obiettivi per vincere</p>
-        <div style="margin-top:8px" id="ch-obj-box">{ch_obj_details}</div>
-      </div>
-    </div>
-  </div>
-  </div><!-- end ch-standard -->
-
-  <!-- ═══ CHALLENGE LONDRA ═══════════════════════════════════════════ -->
-  <div id="ch-londra" style="display:none">
-    <div style="background:linear-gradient(135deg,var(--navy),var(--n3));border-radius:12px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:16px;box-shadow:0 4px 20px rgba(11,30,61,.18)">
-      <div style="font-size:2.5rem;line-height:1">&#x1F1EC;&#x1F1E7;</div>
-      <div>
-        <p style="font-family:'Playfair Display',serif;color:var(--g2);font-size:1.2rem;font-weight:700;margin-bottom:3px">Challenge Londra 2026</p>
-        <p style="color:rgba(255,255,255,.55);font-size:.75rem">1 Maggio &mdash; 30 Giugno 2026 &middot; Gruppo Onorato</p>
-        <p style="color:rgba(255,255,255,.38);font-size:.67rem;margin-top:4px;font-style:italic">Solo incassato di nuove polizze sottoscritte nel periodo: non contano le rate di polizze precedenti</p>
-      </div>
-      <div style="margin-left:auto;text-align:right;flex-shrink:0">
-        <p style="font-family:'Outfit',sans-serif;color:var(--gold);font-size:1.4rem;font-weight:700;line-height:1">&#x20AC; 5.000</p>
-        <p style="color:rgba(255,255,255,.45);font-size:.63rem;margin-top:2px">Min. incassato</p>
-        <p style="font-family:'Outfit',sans-serif;color:var(--g2);font-size:1rem;font-weight:600;margin-top:6px;line-height:1">4 polizze</p>
-        <p style="color:rgba(255,255,255,.45);font-size:.63rem;margin-top:2px">Min. polizze</p>
-      </div>
-    </div>
-    <div style="background:var(--w);border-radius:10px;padding:16px 20px;margin-bottom:16px;box-shadow:var(--sh);border-left:4px solid var(--gold)">
-      <p style="font-family:'Playfair Display',serif;font-size:.87rem;font-weight:600;color:var(--navy);margin-bottom:10px">&#x1F4DC; Regole della Challenge</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div style="background:var(--cream);border-radius:7px;padding:10px 13px">
-          <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:4px">Cosa conta</p>
-          <p style="font-size:.77rem;line-height:1.55;color:var(--navy)">Solo le rate incassate (&#x2713;) di polizze <strong>sottoscritte tra 01/05 e 30/06/2026</strong>. Si conta solo l'incassato effettivo di maggio e giugno.</p>
-        </div>
-        <div style="background:var(--cream);border-radius:7px;padding:10px 13px">
-          <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:4px">Cosa NON conta</p>
-          <p style="font-size:.77rem;line-height:1.55;color:var(--navy)">Le rate di polizze sottoscritte <strong>prima del 1&#xB0; maggio</strong> non rientrano, anche se cadono in maggio o giugno.</p>
-        </div>
-        <div style="background:var(--cream);border-radius:7px;padding:10px 13px">
-          <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:4px">Esempio &#x2705;</p>
-          <p style="font-size:.77rem;line-height:1.55;color:var(--navy)">Polizza mensile incassata <strong>1 maggio</strong>: contano le rate di maggio e giugno quando incassate.</p>
-        </div>
-        <div style="background:var(--cream);border-radius:7px;padding:10px 13px">
-          <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:4px">Esempio &#x274C;</p>
-          <p style="font-size:.77rem;line-height:1.55;color:var(--navy)">Polizza mensile incassata <strong>29 aprile</strong>: le rate di maggio e giugno <strong>non rientrano</strong> nel contest.</p>
-        </div>
-      </div>
-    </div>
-    <div class="g2" style="align-items:start">
-      <div class="tw">
-        <div class="twh"><h3>&#x1F4CA; Classifica Challenge Londra</h3><span>01/05/2026 &ndash; 30/06/2026</span></div>
-        <div style="padding:10px 18px;background:var(--cream);border-bottom:1px solid var(--brd);display:flex;gap:16px;flex-wrap:wrap;align-items:center">
-          <span class="tag bb">Min. Polizze: 4</span>
-          <span class="tag bn">Min. Incassato: &#x20AC; 5.000</span>
-          {lon_stato_bar}
-        </div>
-        <table><thead><tr><th>Pos.</th><th>Family Banker</th><th>N&#xB0; Polizze</th><th>Incassato Mag+Giu</th><th>Stato</th></tr></thead>
-        <tbody>{lon_rows}</tbody></table>
-      </div>
-      <div>
-        <div class="tw">
-          <div class="twh"><h3>&#x1F465; Partecipanti</h3><span>Gruppo Onorato ({lon_n_part})</span></div>
-          <div style="padding:14px 18px;line-height:2">{lon_pills}</div>
-        </div>
-        <div class="card gold" style="margin-top:12px">
-          <div class="cico">&#x1F1EC;&#x1F1E7;</div>
-          <p class="cl">Obiettivi doppi per vincere</p>
-          <div style="margin-top:8px">
-            <p style="font-size:.8rem;margin-bottom:6px">&#x1F4CB; <strong>Min. polizze:</strong> 4 nuove polizze nel periodo</p>
-            <p style="font-size:.8rem;margin-bottom:6px">&#x1F4B6; <strong>Min. incassato:</strong> &#x20AC; 5.000 (rate &#x2713; di mag+giu)</p>
-            <p style="font-size:.75rem;color:var(--mut);margin-top:8px;line-height:1.5">La classifica usa l&#x2019;incassato reale delle polizze nuove, non il premio annuo.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div><!-- end ch-londra -->
-
-</section>
-    <div class="twh"><h3>&#x2699;&#xFE0F; Configura Nuova Challenge</h3><span>Seleziona parametri e aggiorna Excel per salvare</span></div>
-    <div style="padding:20px 22px">
-      <div class="g3" style="margin-bottom:16px">
-        <div>
-          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Data Inizio</p>
-          <input type="date" id="ch-inizio" value="{ch_inizio_val}"
-            style="width:100%;padding:8px 10px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--cream);color:var(--navy)">
-        </div>
-        <div>
-          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Data Fine</p>
-          <input type="date" id="ch-fine" value="{ch_fine_val}"
-            style="width:100%;padding:8px 10px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--cream);color:var(--navy)">
-        </div>
-        <div>
-          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Obiettivi per Vincere</p>
-          <div style="display:flex;gap:8px">
-            <div style="flex:1">
-              <label style="font-size:.68rem;color:var(--mut)">Min. Polizze</label>
-              <input type="number" id="ch-min-pol" value="{ch_min_pol}" min="0"
-                style="width:100%;padding:6px 8px;border:1px solid var(--brd);border-radius:5px;font-size:.82rem;background:var(--cream);margin-top:3px">
-            </div>
-            <div style="flex:1">
-              <label style="font-size:.68rem;color:var(--mut)">Min. Premio (€)</label>
-              <input type="number" id="ch-min-pa" value="{ch_min_pa_val}" min="0" step="100"
-                style="width:100%;padding:6px 8px;border:1px solid var(--brd);border-radius:5px;font-size:.82rem;background:var(--cream);margin-top:3px">
-            </div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:8px">Partecipanti — seleziona chi include nella challenge</p>
-        <div id="ch-partecipanti" style="display:flex;flex-wrap:wrap;gap:6px">
-          {ch_checkboxes}
-        </div>
-      </div>
-      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--brd);display:flex;gap:10px;align-items:center">
-        <button onclick="resetChallenge()"
-          style="padding:8px 20px;background:var(--cream);border:1px solid var(--brd);border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.8rem;color:var(--navy)">
-          &#x21BA; Reset selezione Excel
-        </button>
-        <p style="font-size:.72rem;color:var(--mut)">&#x2139;&#xFE0F; La classifica viene sempre letta dall'Excel. Questo configuratore mostra un'anteprima dei partecipanti selezionati.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="g2" style="align-items:start">
-    <div class="tw">
-      <div class="twh"><h3>&#x1F4CA; Classifica Challenge</h3><span id="ch-periodo-lbl">{ch_periodo}</span></div>
-      <div style="padding:10px 18px;background:var(--cream);border-bottom:1px solid var(--brd);display:flex;gap:16px;flex-wrap:wrap">
-        {ch_badge_pol}
-        {ch_badge_pa}
-      </div>
-      <table><thead><tr><th>Pos.</th><th>Family Banker</th><th>Polizze</th><th>Premio Annuo</th><th>Stato</th></tr></thead>
-      <tbody id="ch-classifica">{ch_rows}</tbody></table>
-    </div>
-    <div>
-      <div class="tw">
-        <div class="twh"><h3>&#x1F465; Partecipanti Selezionati</h3><span id="ch-n-part">{n_partecipanti} selezionati</span></div>
-        <div id="ch-pills-box" style="padding:14px 18px;line-height:2">{ch_pills}</div>
-      </div>
-      <div class="card gold" style="margin-top:0">
-        <div class="cico">&#x1F3C6;</div>
-        <p class="cl">Obiettivi per vincere</p>
-        <div style="margin-top:8px" id="ch-obj-box">
-          {ch_obj_details}
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
 </div>
 <footer style="background:var(--navy);color:rgba(255,255,255,.3);text-align:center;padding:14px;font-size:.65rem;letter-spacing:.05em;border-top:1px solid var(--gold)">
@@ -1789,6 +1636,108 @@ function showChTab(tab) {{
     btn.style.color = active ? 'var(--navy)' : 'var(--mut)';
   }});
 }}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){{
+  var FBS = Object.keys(COLLDATA).sort();
+  var selFbs = new Set();
+  var cbDiv = document.getElementById('prod-fb-checkboxes');
+  FBS.forEach(function(fb){{
+    var lbl = document.createElement('label');
+    lbl.style.cssText = 'display:flex;align-items:center;gap:7px;padding:5px 4px;cursor:pointer;font-size:.8rem;';
+    var cb = document.createElement('input');
+    cb.type='checkbox'; cb.value=fb;
+    cb.addEventListener('change', function(){{ if(this.checked) selFbs.add(fb); else selFbs.delete(fb); updatePills(); }});
+    lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' '+fb));
+    cbDiv.appendChild(lbl);
+  }});
+  document.getElementById('prod-dal').value = '2026-01-01';
+  document.getElementById('prod-al').value = new Date().toISOString().slice(0,10);
+  window.toggleProdFbDropdown = function(){{
+    var d=document.getElementById('prod-fb-dropdown');
+    d.style.display = d.style.display==='none'?'block':'none';
+  }};
+  document.addEventListener('click',function(e){{
+    if(!e.target.closest('#prod-fb-pills')&&!e.target.closest('#prod-fb-dropdown')){{
+      var d=document.getElementById('prod-fb-dropdown'); if(d) d.style.display='none';
+    }}
+  }});
+  window.prodSelectAll=function(){{ selFbs=new Set(FBS); cbDiv.querySelectorAll('input').forEach(function(c){{c.checked=true;}}); updatePills(); }};
+  window.prodSelectNone=function(){{ selFbs=new Set(); cbDiv.querySelectorAll('input').forEach(function(c){{c.checked=false;}}); updatePills(); }};
+  function updatePills(){{
+    var box=document.getElementById('prod-fb-pills');
+    var ph=document.getElementById('prod-fb-placeholder');
+    box.querySelectorAll('.ppill').forEach(function(p){{p.remove();}});
+    ph.style.display = selFbs.size===0 ? 'inline' : 'none';
+    selFbs.forEach(function(fb){{
+      var sp=document.createElement('span'); sp.className='ppill';
+      sp.style.cssText='background:var(--navy);color:#fff;border-radius:14px;padding:3px 10px;font-size:.72rem;display:inline-flex;align-items:center;gap:5px;';
+      var ini=fb.split(' ').map(function(w){{return w[0];}}).join('').slice(0,2).toUpperCase();
+      sp.appendChild(document.createTextNode(ini+' '));
+      var x=document.createElement('span'); x.innerHTML='&times;'; x.style.cssText='cursor:pointer;opacity:.7;';
+      x.onclick=function(e){{ e.stopPropagation(); selFbs.delete(fb); var c=cbDiv.querySelector('input[value="'+fb+'"]'); if(c)c.checked=false; updatePills(); }};
+      sp.appendChild(x); box.appendChild(sp);
+    }});
+  }}
+  function fmtE(n){{ var s=String(Math.round(n||0)),r='',c=0; for(var i=s.length-1;i>=0;i--){{r=s[i]+(c>0&&c%3===0?'.':'')+r;c++;}} return '\u20ac\u00a0'+r; }}
+  function pf2(s){{ return parseFloat(String(s||0).replace(/\./g,'').replace(',','.'))||0; }}
+  function parseDate(s){{ if(!s)return null; var p=s.split('/'); return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):null; }}
+  function getPols(fb){{
+    var h=COLLDATA[fb]||'', res=[];
+    var re=/<tr><td>([\d\/]*)<\/td><td><strong>[^<]*<\/strong><\/td><td>[^<]*<\/td><td class="num">[^<]*<\/td><td class="num">[^\u20ac]*[\u20ac\u00a0\s]*([\d\.,]*)<\/td><td>[^<]*<\/td><td><span class="tag ([^"]*)"/g, m;
+    while((m=re.exec(h))!==null) res.push({{date:m[1],pa:pf2(m[2]),lav:m[3].indexOf('tb')>=0}});
+    return res;
+  }}
+  function getAppts(fb){{ var h=COLLDATA[fb]||'', m=h.match(/<tr><td>Appt<\/td>(.*?)<\/tr>/), ns; if(!m)return 0; ns=m[1].match(/>([\d]+)</g); return ns?ns.reduce(function(s,n){{return s+parseInt(n.replace(/[><]/g,''));}},0):0; }}
+  function getCb(fb){{ var h=COLLDATA[fb]||'', m=h.match(/Callback<\/span><span class="csv"[^>]*>([\d]+)/); return m?+m[1]:0; }}
+  function getInc(fb){{ var h=COLLDATA[fb]||'', m=h.match(/Premi Incassati<\/p><p class="ckv num"[^>]*>[^\u20ac]*[\u20ac\u00a0\s]*([\d\.\,]+)/); return m?pf2(m[1]):0; }}
+  window.runProdAnalysis=function(){{
+    if(!selFbs.size){{alert('Seleziona almeno un Family Banker');return;}}
+    var dal=document.getElementById('prod-dal').value, al=document.getElementById('prod-al').value;
+    if(!dal||!al){{alert('Seleziona il periodo');return;}}
+    var dF=new Date(dal), dT=new Date(al); dT.setHours(23,59,59);
+    var ms=[]; document.querySelectorAll('#prod-metrics input:checked').forEach(function(c){{ms.push(c.value);}});
+    var rows=[],tpa=0,tinc=0,tpol=0,tappt=0,tcb=0,tlav=0;
+    selFbs.forEach(function(fb){{
+      var pols=getPols(fb).filter(function(p){{var d=parseDate(p.date);return d&&d>=dF&&d<=dT;}});
+      var pa=pols.reduce(function(s,p){{return s+p.pa;}},0), pol=pols.length, lav=pols.filter(function(p){{return p.lav;}}).length;
+      var inc=getInc(fb), appt=getAppts(fb), cb=getCb(fb);
+      tpa+=pa;tinc+=inc;tpol+=pol;tappt+=appt;tcb+=cb;tlav+=lav;
+      rows.push({{fb:fb,pa:pa,inc:inc,pol:pol,appt:appt,cb:cb,lav:lav,conv:appt>0?Math.round(pol/appt*100):0,med:pol>0?Math.round(pa/pol):0}});
+    }});
+    rows.sort(function(a,b){{return b.pa-a.pa;}});
+    var kd=document.getElementById('prod-kpi-cards'); kd.innerHTML='';
+    function kc(l,v,c){{var d=document.createElement('div');d.style.cssText='background:var(--cream);border-radius:9px;padding:12px 16px;border-left:3px solid '+c+';min-width:120px;flex:1';d.innerHTML='<p style="font-size:.62rem;text-transform:uppercase;color:var(--mut);margin-bottom:4px">'+l+'</p><p style="font-family:Outfit,sans-serif;font-size:1.2rem;font-weight:700;color:var(--navy)">'+v+'</p>';kd.appendChild(d);}}
+    if(ms.includes('pa'))   kc('Premio Annuo',fmtE(tpa),'#2E8B5F');
+    if(ms.includes('pol'))  kc('N\u00b0 Polizze',tpol,'#2E75B6');
+    if(ms.includes('appt')) kc('N\u00b0 Appt YTD',tappt,'#D97706');
+    if(ms.includes('inc'))  kc('Incassato YTD',fmtE(tinc),'#8B5CF6');
+    if(ms.includes('cb'))   kc('Callback',tcb,'#C0392B');
+    if(ms.includes('lav'))  kc('In Lavorazione',tlav,'#F59E0B');
+    var cols=[
+      {{k:'fb',  l:'Family Banker',f:function(v){{return '<strong>'+v+'</strong>';}}}},
+      {{k:'pol', l:'N\u00b0 Pol.',f:function(v){{return '<span class="num">'+v+'</span>';}}}},
+      {{k:'pa',  l:'Premio Annuo',f:function(v){{return '<span class="num">'+fmtE(v)+'</span>';}}}},
+      {{k:'inc', l:'Incassato',   f:function(v){{return '<span class="num">'+fmtE(v)+'</span>';}}}},
+      {{k:'appt',l:'N\u00b0 Appt',f:function(v){{return '<span class="num">'+v+'</span>';}}}},
+      {{k:'cb',  l:'Callback',    f:function(v){{return '<span class="num">'+v+'</span>';}}}},
+      {{k:'lav', l:'In Lav.',     f:function(v){{return '<span class="num">'+v+'</span>';}}}},
+      {{k:'conv',l:'% Conv.',     f:function(v){{return '<span class="num">'+v+'%</span>';}}}},
+      {{k:'med', l:'Premio Medio',f:function(v){{return '<span class="num">'+fmtE(v)+'</span>';}}}}
+    ];
+    var ac=cols.filter(function(c){{return c.k==='fb'||ms.includes(c.k);}});
+    document.getElementById('prod-thead').innerHTML='<tr>'+ac.map(function(c){{return '<th>'+c.l+'</th>';}}).join('')+'</tr>';
+    var tot={{fb:'<strong>TOTALE</strong>',pa:tpa,inc:tinc,pol:tpol,appt:tappt,cb:tcb,lav:tlav,conv:tappt>0?Math.round(tpol/tappt*100):0,med:tpol>0?Math.round(tpa/tpol):0}};
+    document.getElementById('prod-tbody').innerHTML=
+      rows.map(function(r,i){{return '<tr style="'+(i%2?'background:var(--cream)':'')+'">'+ ac.map(function(c){{return '<td>'+c.f(r[c.k])+'</td>';}}).join('')+'</tr>';}}).join('')+
+      '<tr style="border-top:2px solid var(--brd);font-weight:600">'+ac.map(function(c){{return '<td>'+c.f(tot[c.k])+'</td>';}}).join('')+'</tr>';
+    document.getElementById('prod-note').textContent='Polizze dal '+dal.split('-').reverse().join('/')+' al '+al.split('-').reverse().join('/')+' \u00b7 Appt/Cb/Incassato sono YTD';
+    document.getElementById('prod-results').style.display='block';
+    document.getElementById('prod-empty').style.display='none';
+    document.getElementById('prod-fb-dropdown').style.display='none';
+  }};
+}});
 </script>
 </body></html>"""
 
