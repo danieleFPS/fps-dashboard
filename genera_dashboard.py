@@ -1075,37 +1075,79 @@ ch_dati_json  = _json2.dumps(ch_classifica, ensure_ascii=True)
 ch_originali_json = _json2.dumps(ch_partecipanti, ensure_ascii=True)
 ch_min_pa_val_js = int(ch_min_pa) if ch_min_pa > 0 else 0
 
-# ─── CHALLENGE LONDRA — legge dal foglio dedicato ────────────────────
+# ─── CHALLENGE LONDRA — calcola direttamente da Controllo Rate ───────
+# NON legge il foglio Challenge Londra (valori cached), ma ricalcola
+# da zero leggendo Controllo Rate con openpyxl (data_only=True).
 import datetime as _dt2
+from openpyxl import load_workbook as _lw
+
+_LON_START   = _dt2.datetime(2026, 5, 1)
+_LON_END     = _dt2.datetime(2026, 6, 30)
 _LON_MIN_POL = 4
 _LON_MIN_INC = 5000.0
-_lon_class  = []
-_lon_all_fb = []
 
+# Leggi i parametri dal foglio Challenge Londra (celle fisse, non formule)
 try:
-    _chl   = xl['🏁 Challenge Londra']
-    _chl_r = [_chl.iloc[i].to_list() for i in range(28)]
-    _lon_min_pol_xls = ni(_chl_r[2][6])
-    _lon_min_inc_xls = n(_chl_r[3][6])
-    if _lon_min_pol_xls > 0: _LON_MIN_POL = _lon_min_pol_xls
-    if _lon_min_inc_xls > 0: _LON_MIN_INC = _lon_min_inc_xls
-    for _i in range(4, 24):
-        _r = _chl_r[_i]
-        _fb = s(_r[1])
-        if not _fb or not isFB(_fb): continue
-        _lon_class.append({'fb': _fb, 'pol': ni(_r[2]), 'inc': round(n(_r[3]), 2)})
+    _chl_cfg = xl['🏁 Challenge Londra']
+    _p = _chl_cfg.iloc[2].to_list()
+    _q = _chl_cfg.iloc[3].to_list()
+    if ni(_p[6]) > 0: _LON_MIN_POL = ni(_p[6])
+    if n(_q[6])  > 0: _LON_MIN_INC = n(_q[6])
+except: pass
+
+# Partecipanti dal foglio Challenge Londra
+_lon_all_fb = []
+try:
+    _chl_r = [_chl_cfg.iloc[i].to_list() for i in range(26)]
     for _i in range(5, 26):
-        try:
-            _nm = s(_chl_r[_i][6])
-            if _nm and _nm != 'nan' and isFB(_nm): _lon_all_fb.append(_nm)
-        except: pass
-except Exception as _e:
-    print(f"Warning Challenge Londra: {_e}")
+        _nm = s(_chl_r[_i][6])
+        if _nm and _nm != 'nan' and isFB(_nm):
+            _lon_all_fb.append(_nm)
+except: pass
+if not _lon_all_fb:
     _lon_all_fb = [c['name'] for c in D['collaboratori'] if c.get('gruppo') == 'Onorato']
 
-_lon_medals = ['&#x1F947;','&#x1F948;','&#x1F949;'] + [f'{_i2}&#xB0;' for _i2 in range(4, 30)]
-_lon_oggi   = _dt2.datetime.today().strftime('%d/%m/%Y')
-_lon_in_corso = _dt2.datetime.today() >= _dt2.datetime(2026, 5, 1)
+# Calcola incassato direttamente da Controllo Rate con openpyxl
+_lon_inc = {}
+_lon_pol = {}
+try:
+    _wb2 = _lw(EXCEL, data_only=True)
+    _ws2 = _wb2['💳 Controllo Rate']
+    for _rn in range(5, 1004):
+        _fb2 = _ws2.cell(_rn, 2).value
+        if not _fb2 or str(_fb2).strip() in ('nan', ''): break
+        _dp2 = _ws2.cell(_rn, 7).value
+        if not isinstance(_dp2, _dt2.datetime): continue
+        if not (_LON_START <= _dp2 <= _LON_END): continue
+        _fb2 = str(_fb2).strip()
+        _pf2 = float(_ws2.cell(_rn, 5).value or 0)
+        _lon_pol[_fb2] = _lon_pol.get(_fb2, 0) + 1
+        if _ws2.cell(_rn, 14).value == '✓':
+            _lon_inc[_fb2] = _lon_inc.get(_fb2, 0.0) + _pf2
+        if _ws2.cell(_rn, 15).value == '✓':
+            _lon_inc[_fb2] = _lon_inc.get(_fb2, 0.0) + _pf2
+    _wb2.close()
+except Exception as _e:
+    print(f"Warning calcolo Londra: {_e}")
+
+# Costruisci classifica con tutti i partecipanti
+_lon_class = []
+for _fb3 in _lon_all_fb:
+    _lon_class.append({
+        'fb':  _fb3,
+        'pol': _lon_pol.get(_fb3, 0),
+        'inc': round(_lon_inc.get(_fb3, 0.0), 2)
+    })
+# Aggiungi eventuali FB con polizze non nella lista partecipanti
+for _fb3, _pv in _lon_pol.items():
+    if not any(r['fb'] == _fb3 for r in _lon_class):
+        _lon_class.append({'fb': _fb3, 'pol': _pv, 'inc': round(_lon_inc.get(_fb3, 0.0), 2)})
+
+_lon_class.sort(key=lambda x: (-x['inc'], -x['pol'], x['fb']))
+
+_lon_medals   = ['&#x1F947;','&#x1F948;','&#x1F949;'] + [f'{_i2}&#xB0;' for _i2 in range(4, 30)]
+_lon_oggi     = _dt2.datetime.today().strftime('%d/%m/%Y')
+_lon_in_corso = _dt2.datetime.today() >= _LON_START
 lon_stato_bar = (
     f'<span class="tag tg" style="margin-left:auto">&#x1F7E2; Challenge in corso &mdash; agg. {_lon_oggi}</span>'
     if _lon_in_corso else '<span class="tag ta">&#x26A0; Challenge non ancora iniziata</span>'
@@ -1113,24 +1155,26 @@ lon_stato_bar = (
 
 lon_rows = ""
 for _i3, _row3 in enumerate(_lon_class):
-    _vp3 = _row3['pol'] >= _LON_MIN_POL
-    _vi3 = _row3['inc'] >= _LON_MIN_INC
+    _vp3  = _row3['pol'] >= _LON_MIN_POL
+    _vi3  = _row3['inc'] >= _LON_MIN_INC
     _win3 = _vp3 and _vi3
-    _bg3 = "background:linear-gradient(90deg,rgba(200,169,81,.1),transparent)" if _win3 else ""
-    _bp3 = (f"<span class='tag tg'>&#x2713; {_row3['pol']} pol.</span>" if _vp3
-            else f"<span class='tag {'tr2' if _row3['pol']==0 else 'ta'}'>{_row3['pol']} pol.</span>")
-    _bi3 = (f"<span class='tag tg'>&#x2713; {fe(_row3['inc'])}</span>" if _vi3
-            else f"<span class='tag {'tr2' if _row3['inc']==0 else 'ta'}'>{fe(_row3['inc'])}</span>")
-    _st3 = ("&#x1F3C6; Vincitore" if _win3 else "&#x23F3; Serve incassato" if _vp3
-            else "&#x23F3; In corsa" if _row3['pol'] > 0 else "&#x274C; Nessuna pol.")
+    _bg3  = "background:linear-gradient(90deg,rgba(200,169,81,.1),transparent)" if _win3 else ""
+    _bp3  = (f"<span class='tag tg'>&#x2713; {_row3['pol']} pol.</span>" if _vp3
+             else f"<span class='tag {'tr2' if _row3['pol']==0 else 'ta'}'>{_row3['pol']} pol.</span>")
+    _bi3  = (f"<span class='tag tg'>&#x2713; {fe(_row3['inc'])}</span>" if _vi3
+             else f"<span class='tag {'tr2' if _row3['inc']==0 else 'ta'}'>{fe(_row3['inc'])}</span>")
+    _st3  = ("&#x1F3C6; Vincitore" if _win3
+             else "&#x23F3; Serve incassato" if _vp3
+             else "&#x23F3; In corsa" if _row3['pol'] > 0
+             else "&#x274C; Nessuna pol.")
     _med3 = _lon_medals[_i3] if _i3 < len(_lon_medals) else str(_i3 + 1)
     lon_rows += (f"<tr style='{_bg3}'><td>{_med3}</td><td><strong>{_row3['fb']}</strong></td>"
                  f"<td>{_bp3}</td><td>{_bi3}</td><td style='font-size:.8rem'>{_st3}</td></tr>")
 
-lon_pills   = "".join(
+lon_pills  = "".join(
     f"<span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>{_fb3}</span>"
     for _fb3 in _lon_all_fb)
-lon_n_part  = len(_lon_all_fb)
+lon_n_part = len(_lon_all_fb)
 
 CSS = """
 :root{--navy:#0B1E3D;--n2:#142952;--n3:#1E3A6E;--gold:#C8A951;--g2:#E8CC7A;--cream:#FAF6EE;--w:#fff;--gr:#2E8B5F;--gr2:#3BA870;--red:#C0392B;--amb:#D97706;--mut:#64748B;--brd:rgba(200,169,81,.2);--sh:0 2px 14px rgba(11,30,61,.07);--sh2:0 6px 28px rgba(11,30,61,.13)}
