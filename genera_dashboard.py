@@ -92,6 +92,7 @@ D['kpiGen'] = {
     'incassoPrevisto': round(n(r10[3]), 2), 'premioFirma': round(n(r10[4]), 2),
     'premiIncassati': round(n(r10[5]), 2), 'residuo2026': round(n(r10[6]), 2),
     'residuo2027': round(n(r10[7]), 2), 'totResiduo': round(n(r10[8]), 2),
+    'premioFirmaYTD': round(n(r10[4]), 2),
     'polLav': ni(r14[1]), 'firmaLav': round(n(r14[2]), 2),
     'apptCom': ni(r14[3]), 'apptEff': ni(r14[4]),
     'convRate': round(n(r14[5]), 4), 'callback': ni(r14[6]),
@@ -159,6 +160,7 @@ for i in range(3, 30):
     D['collaboratori'].append({
         'fbo': s(r[0]), 'gruppo': s(r[1]), 'name': nm,
         'email': s(r[3]), 'ingresso': ing,
+        'cellulare': s(r[10]) if len(r)>10 and r[10] else '',
         'objAppt': ni(r[5]), 'objMese': ni(r[6]), 'objPremio': ni(r[7])
     })
 
@@ -248,6 +250,7 @@ MESI_ORD = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
 mesi_raw = sorted(set(r['mese'] for r in D['giornalieri'] if r['mese']),
                   key=lambda m: next((i for i, x in enumerate(MESI_ORD) if m.startswith(x)), 99))
 
+D['collaboratori'].sort(key=lambda c: c['name'])
 FBS = [c['name'] for c in D['collaboratori']]
 PM, AM, PZ = {}, {}, {}
 for r in D['giornalieri']:
@@ -376,13 +379,20 @@ pct_target = round(G['premiIncassati'] / max(G['target'], 1) * 100)
 pctO = round(ON['incassato'] / max(ON['obiettivo'], 1) * 100)
 pctP = round(ON['previstoDic'] / max(ON['obiettivo'], 1) * 100)
 
-# KPI Row 1
+# KPI Row 1: Polizze Sottoscritte, Premio Annuo
 kpi1 = (
     card("Polizze Sottoscritte YTD", fn(G['polizze']),
          f"{len(PL_data)} in lavorazione", "gold", "📋",
          bdg=badge("bb", "Anno in corso"))
     + card("Premio Annuo Totale", fe(G['premioAnnuo']),
            f"Medio: {fe(G['premioAnnuo'] // max(G['polizze'], 1))}", "", "💶")
+)
+
+# KPI Row 2: Premio Firma, Incasso Previsto, Premi Incassati, Residuo, Pol. Lavorazione
+kpi2 = (
+    card("Premio alla Firma YTD", fe(G['premioFirmaYTD']),
+         "Premio totale alla sottoscrizione", "gold", "📑",
+         bdg=badge("bn", "YTD"))
     + card("Incasso Previsto 2026", fe(G['incassoPrevisto']),
            "Incassi certi entro dicembre", "navy", "📈",
            bdg=badge("bn", "Previsto"))
@@ -392,10 +402,13 @@ kpi1 = (
     + card("Residuo da Incassare 2026", fe(G['residuo2026']),
            f"+ {fe(G['residuo2027'])} nel 2027", "red", "📉",
            bdg=badge("ba", f"Tot: {fe(G['totResiduo'])}"))
+    + card("Polizze in Lavorazione", fn(len(PL_data)),
+           f"Premio Annuo: {fe(pol_lav_pa)}", "", "⚙️",
+           bdg=badge("bn", "Da processare"))
 )
 
-# KPI Row 2
-kpi2 = (
+# KPI Row 3: Appt Comunicati, Tasso Conv, FB Attivi, Callback
+kpi3 = (
     card("Appuntamenti Comunicati", fn(G['apptCom']),
          f"Effettuati: {fn(G['apptEff'])} ({round(G['apptEff']/max(G['apptCom'],1)*100)}%)", "", "📅")
     + card("Tasso di Conversione", fp(G['convRate']),
@@ -408,9 +421,6 @@ kpi2 = (
     + card("Callback Aperti", fn(G['callback']),
            "Opportunità da richiamare subito", "amb", "🔄",
            bdg=badge("ba", "Urgente"))
-    + card("Polizze in Lavorazione", fn(len(PL_data)),
-           f"Premio Annuo: {fe(pol_lav_pa)}", "", "⚙️",
-           bdg=badge("bn", "Da processare"))
 )
 
 # Onorato
@@ -851,8 +861,8 @@ def colloquio_html(c):
         <p class="cpnm">{nm}</p>
         <p class="cpfb">{c['fbo']} &middot; {c['gruppo']}</p>
         <div style="margin-bottom:9px">{atag}</div>
-        <div class="cpst"><span class="csl">Email</span><span class="csv" style="font-size:.62rem">{c['email'] or '&#x2014;'}</span></div>
-        <div class="cpst"><span class="csl">Ingresso</span><span class="csv">{c['ingresso'] or '&#x2014;'}</span></div>
+        <div class="cpst" style="flex-direction:column;align-items:flex-start;gap:2px"><span class="csl">Email</span><span class="csv" style="font-size:.58rem;word-break:break-all;text-align:left">{c['email'] or '&#x2014;'}</span></div>
+        <div class="cpst"><span class="csl">Cellulare</span><span class="csv">{c.get('cellulare','') or '&#x2014;'}</span></div>
         <div class="cpst"><span class="csl">Obj pol./mese</span><span class="csv">{c['objMese']}</span></div>
         <div class="cpst"><span class="csl">Delta vs target</span><span class="csv" style="color:{'#2E8B5F' if dlt>=0 else '#D97706' if dlt==-1 else '#C0392B'}">{dlt}</span></div>
         <div class="cpst"><span class="csl">Obj premio</span><span class="csv">{fe(c['objPremio']) if c['objPremio'] else '&#x2014;'}</span></div>
@@ -1065,6 +1075,63 @@ ch_dati_json  = _json2.dumps(ch_classifica, ensure_ascii=True)
 ch_originali_json = _json2.dumps(ch_partecipanti, ensure_ascii=True)
 ch_min_pa_val_js = int(ch_min_pa) if ch_min_pa > 0 else 0
 
+# ─── CHALLENGE LONDRA — legge dal foglio dedicato ────────────────────
+import datetime as _dt2
+_LON_MIN_POL = 4
+_LON_MIN_INC = 5000.0
+_lon_class  = []
+_lon_all_fb = []
+
+try:
+    _chl   = xl['🏁 Challenge Londra']
+    _chl_r = [_chl.iloc[i].to_list() for i in range(28)]
+    _lon_min_pol_xls = ni(_chl_r[2][6])
+    _lon_min_inc_xls = n(_chl_r[3][6])
+    if _lon_min_pol_xls > 0: _LON_MIN_POL = _lon_min_pol_xls
+    if _lon_min_inc_xls > 0: _LON_MIN_INC = _lon_min_inc_xls
+    for _i in range(4, 24):
+        _r = _chl_r[_i]
+        _fb = s(_r[1])
+        if not _fb or not isFB(_fb): continue
+        _lon_class.append({'fb': _fb, 'pol': ni(_r[2]), 'inc': round(n(_r[3]), 2)})
+    for _i in range(5, 26):
+        try:
+            _nm = s(_chl_r[_i][6])
+            if _nm and _nm != 'nan' and isFB(_nm): _lon_all_fb.append(_nm)
+        except: pass
+except Exception as _e:
+    print(f"Warning Challenge Londra: {_e}")
+    _lon_all_fb = [c['name'] for c in D['collaboratori'] if c.get('gruppo') == 'Onorato']
+
+_lon_medals = ['&#x1F947;','&#x1F948;','&#x1F949;'] + [f'{_i2}&#xB0;' for _i2 in range(4, 30)]
+_lon_oggi   = _dt2.datetime.today().strftime('%d/%m/%Y')
+_lon_in_corso = _dt2.datetime.today() >= _dt2.datetime(2026, 5, 1)
+lon_stato_bar = (
+    f'<span class="tag tg" style="margin-left:auto">&#x1F7E2; Challenge in corso &mdash; agg. {_lon_oggi}</span>'
+    if _lon_in_corso else '<span class="tag ta">&#x26A0; Challenge non ancora iniziata</span>'
+)
+
+lon_rows = ""
+for _i3, _row3 in enumerate(_lon_class):
+    _vp3 = _row3['pol'] >= _LON_MIN_POL
+    _vi3 = _row3['inc'] >= _LON_MIN_INC
+    _win3 = _vp3 and _vi3
+    _bg3 = "background:linear-gradient(90deg,rgba(200,169,81,.1),transparent)" if _win3 else ""
+    _bp3 = (f"<span class='tag tg'>&#x2713; {_row3['pol']} pol.</span>" if _vp3
+            else f"<span class='tag {'tr2' if _row3['pol']==0 else 'ta'}'>{_row3['pol']} pol.</span>")
+    _bi3 = (f"<span class='tag tg'>&#x2713; {fe(_row3['inc'])}</span>" if _vi3
+            else f"<span class='tag {'tr2' if _row3['inc']==0 else 'ta'}'>{fe(_row3['inc'])}</span>")
+    _st3 = ("&#x1F3C6; Vincitore" if _win3 else "&#x23F3; Serve incassato" if _vp3
+            else "&#x23F3; In corsa" if _row3['pol'] > 0 else "&#x274C; Nessuna pol.")
+    _med3 = _lon_medals[_i3] if _i3 < len(_lon_medals) else str(_i3 + 1)
+    lon_rows += (f"<tr style='{_bg3}'><td>{_med3}</td><td><strong>{_row3['fb']}</strong></td>"
+                 f"<td>{_bp3}</td><td>{_bi3}</td><td style='font-size:.8rem'>{_st3}</td></tr>")
+
+lon_pills   = "".join(
+    f"<span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>{_fb3}</span>"
+    for _fb3 in _lon_all_fb)
+lon_n_part  = len(_lon_all_fb)
+
 CSS = """
 :root{--navy:#0B1E3D;--n2:#142952;--n3:#1E3A6E;--gold:#C8A951;--g2:#E8CC7A;--cream:#FAF6EE;--w:#fff;--gr:#2E8B5F;--gr2:#3BA870;--red:#C0392B;--amb:#D97706;--mut:#64748B;--brd:rgba(200,169,81,.2);--sh:0 2px 14px rgba(11,30,61,.07);--sh2:0 6px 28px rgba(11,30,61,.13)}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1170,8 +1237,8 @@ tbody td:first-child{padding-left:18px;font-weight:500}
 .collsel option{color:var(--navy);background:#fff}
 .collb{padding:22px}
 .collph{text-align:center;padding:28px;color:var(--mut);font-size:.82rem}
-.collg{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start}
-.cpf{background:var(--cream);border-radius:10px;padding:18px;text-align:center}
+.collg{display:grid;grid-template-columns:230px 1fr;gap:20px;align-items:start}
+.cpf{background:var(--cream);border-radius:10px;padding:18px;text-align:center;min-width:0;overflow:hidden}
 .cpav{width:56px;height:56px;background:linear-gradient(135deg,var(--navy),var(--n3));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin:0 auto 9px;color:var(--g2);font-family:'Playfair Display',serif;font-weight:700}
 .cpnm{font-family:'Playfair Display',serif;font-size:.95rem;color:var(--navy);font-weight:600;margin-bottom:2px}
 .cpfb{font-size:.62rem;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
@@ -1240,8 +1307,9 @@ HTML = f"""<!DOCTYPE html>
     </div>
     <div><p class="hpct">{pct_target}%</p><p class="hpcts">del budget</p></div>
   </div>
-  <div class="g5">{kpi1}</div>
-  <div class="g4">{kpi2}</div>
+  <div class="g2">{kpi1}</div>
+  <div class="g5">{kpi2}</div>
+  <div class="g4">{kpi3}</div>
   <div class="onc"><div class="onh"><h3>&#x1F3AF; Obiettivo Gruppo Onorato 2026</h3><span>Fonte: Foglio Obj Onorato</span></div><div class="onb">{onb}</div></div>
   <div class="g2">
     <div class="tw">
@@ -1339,8 +1407,150 @@ HTML = f"""<!DOCTYPE html>
   <p class="st">&#x1F3C6; Challenge</p>
   <p class="ss">Configura partecipanti, periodo e obiettivi &middot; Classifica da Excel</p>
 
+  <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid var(--brd)">
+    <button class="ch-tab on" onclick="showChTab('standard')" style="padding:8px 20px;border:none;border-bottom:3px solid var(--gold);background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:var(--navy);cursor:pointer;margin-bottom:-2px">&#x1F3C6; Challenge Corrente</button>
+    <button class="ch-tab" onclick="showChTab('londra')" style="padding:8px 20px;border:none;border-bottom:3px solid transparent;background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--mut);cursor:pointer;margin-bottom:-2px">&#x1F1EC;&#x1F1E7; Challenge Londra</button>
+  </div>
+
+  <div id="ch-standard">
   <!-- CONFIGURATORE CHALLENGE -->
   <div class="tw" style="margin-bottom:16px">
+    <div class="twh"><h3>&#x2699;&#xFE0F; Configura Nuova Challenge</h3><span>Seleziona parametri e aggiorna Excel per salvare</span></div>
+    <div style="padding:20px 22px">
+      <div class="g3" style="margin-bottom:16px">
+        <div>
+          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Data Inizio</p>
+          <input type="date" id="ch-inizio" value="{ch_inizio_val}"
+            style="width:100%;padding:8px 10px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--cream);color:var(--navy)">
+        </div>
+        <div>
+          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Data Fine</p>
+          <input type="date" id="ch-fine" value="{ch_fine_val}"
+            style="width:100%;padding:8px 10px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--cream);color:var(--navy)">
+        </div>
+        <div>
+          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:6px">Obiettivi per Vincere</p>
+          <div style="display:flex;gap:8px">
+            <div style="flex:1">
+              <label style="font-size:.68rem;color:var(--mut)">Min. Polizze</label>
+              <input type="number" id="ch-min-pol" value="{ch_min_pol}" min="0"
+                style="width:100%;padding:6px 8px;border:1px solid var(--brd);border-radius:5px;font-size:.82rem;background:var(--cream);margin-top:3px">
+            </div>
+            <div style="flex:1">
+              <label style="font-size:.68rem;color:var(--mut)">Min. Premio (€)</label>
+              <input type="number" id="ch-min-pa" value="{ch_min_pa_val}" min="0" step="100"
+                style="width:100%;padding:6px 8px;border:1px solid var(--brd);border-radius:5px;font-size:.82rem;background:var(--cream);margin-top:3px">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:8px">Partecipanti — seleziona chi include nella challenge</p>
+        <div id="ch-partecipanti" style="display:flex;flex-wrap:wrap;gap:6px">
+          {ch_checkboxes}
+        </div>
+      </div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--brd);display:flex;gap:10px;align-items:center">
+        <button onclick="resetChallenge()"
+          style="padding:8px 20px;background:var(--cream);border:1px solid var(--brd);border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.8rem;color:var(--navy)">
+          &#x21BA; Reset selezione Excel
+        </button>
+        <p style="font-size:.72rem;color:var(--mut)">&#x2139;&#xFE0F; La classifica viene sempre letta dall'Excel. Questo configuratore mostra un'anteprima dei partecipanti selezionati.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2" style="align-items:start">
+    <div class="tw">
+      <div class="twh"><h3>&#x1F4CA; Classifica Challenge</h3><span id="ch-periodo-lbl">{ch_periodo}</span></div>
+      <div style="padding:10px 18px;background:var(--cream);border-bottom:1px solid var(--brd);display:flex;gap:16px;flex-wrap:wrap">
+        {ch_badge_pol}
+        {ch_badge_pa}
+      </div>
+      <table><thead><tr><th>Pos.</th><th>Family Banker</th><th>Polizze</th><th>Premio Annuo</th><th>Stato</th></tr></thead>
+      <tbody id="ch-classifica">{ch_rows}</tbody></table>
+    </div>
+    <div>
+      <div class="tw">
+        <div class="twh"><h3>&#x1F465; Partecipanti Selezionati</h3><span id="ch-n-part">{n_partecipanti} selezionati</span></div>
+        <div id="ch-pills-box" style="padding:14px 18px;line-height:2">{ch_pills}</div>
+      </div>
+      <div class="card gold" style="margin-top:0">
+        <div class="cico">&#x1F3C6;</div>
+        <p class="cl">Obiettivi per vincere</p>
+        <div style="margin-top:8px" id="ch-obj-box">{ch_obj_details}</div>
+      </div>
+    </div>
+  </div>
+  </div><!-- end ch-standard -->
+
+  <!-- ═══ CHALLENGE LONDRA ═══════════════════════════════════════════ -->
+  <div id="ch-londra" style="display:none">
+    <div style="background:linear-gradient(135deg,var(--navy),var(--n3));border-radius:12px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:16px;box-shadow:0 4px 20px rgba(11,30,61,.18)">
+      <div style="font-size:2.5rem;line-height:1">&#x1F1EC;&#x1F1E7;</div>
+      <div>
+        <p style="font-family:'Playfair Display',serif;color:var(--g2);font-size:1.2rem;font-weight:700;margin-bottom:3px">Challenge Londra 2026</p>
+        <p style="color:rgba(255,255,255,.55);font-size:.75rem">1 Maggio &mdash; 30 Giugno 2026 &middot; Gruppo Onorato</p>
+        <p style="color:rgba(255,255,255,.38);font-size:.67rem;margin-top:4px;font-style:italic">Solo incassato di nuove polizze sottoscritte nel periodo: non contano le rate di polizze precedenti</p>
+      </div>
+      <div style="margin-left:auto;text-align:right;flex-shrink:0">
+        <p style="font-family:'Outfit',sans-serif;color:var(--gold);font-size:1.4rem;font-weight:700;line-height:1">&#x20AC; 5.000</p>
+        <p style="color:rgba(255,255,255,.45);font-size:.63rem;margin-top:2px">Min. incassato</p>
+        <p style="font-family:'Outfit',sans-serif;color:var(--g2);font-size:1rem;font-weight:600;margin-top:6px;line-height:1">4 polizze</p>
+        <p style="color:rgba(255,255,255,.45);font-size:.63rem;margin-top:2px">Min. polizze</p>
+      </div>
+    </div>
+    <div style="background:var(--w);border-radius:10px;padding:16px 20px;margin-bottom:16px;box-shadow:var(--sh);border-left:4px solid var(--gold)">
+      <p style="font-family:'Playfair Display',serif;font-size:.87rem;font-weight:600;color:var(--navy);margin-bottom:10px">&#x1F4DC; Regole della Challenge</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--cream);border-radius:7px;padding:10px 13px">
+          <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:4px">Cosa conta</p>
+          <p style="font-size:.77rem;line-height:1.55;color:var(--navy)">Solo le rate incassate (&#x2713;) di polizze <strong>sottoscritte tra 01/05 e 30/06/2026</strong>. Si conta solo l'incassato effettivo di maggio e giugno.</p>
+        </div>
+        <div style="background:var(--cream);border-radius:7px;padding:10px 13px">
+          <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:4px">Cosa NON conta</p>
+          <p style="font-size:.77rem;line-height:1.55;color:var(--navy)">Le rate di polizze sottoscritte <strong>prima del 1&#xB0; maggio</strong> non rientrano, anche se cadono in maggio o giugno.</p>
+        </div>
+        <div style="background:var(--cream);border-radius:7px;padding:10px 13px">
+          <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:4px">Esempio &#x2705;</p>
+          <p style="font-size:.77rem;line-height:1.55;color:var(--navy)">Polizza mensile incassata <strong>1 maggio</strong>: contano le rate di maggio e giugno quando incassate.</p>
+        </div>
+        <div style="background:var(--cream);border-radius:7px;padding:10px 13px">
+          <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);margin-bottom:4px">Esempio &#x274C;</p>
+          <p style="font-size:.77rem;line-height:1.55;color:var(--navy)">Polizza mensile incassata <strong>29 aprile</strong>: le rate di maggio e giugno <strong>non rientrano</strong> nel contest.</p>
+        </div>
+      </div>
+    </div>
+    <div class="g2" style="align-items:start">
+      <div class="tw">
+        <div class="twh"><h3>&#x1F4CA; Classifica Challenge Londra</h3><span>01/05/2026 &ndash; 30/06/2026</span></div>
+        <div style="padding:10px 18px;background:var(--cream);border-bottom:1px solid var(--brd);display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+          <span class="tag bb">Min. Polizze: 4</span>
+          <span class="tag bn">Min. Incassato: &#x20AC; 5.000</span>
+          {lon_stato_bar}
+        </div>
+        <table><thead><tr><th>Pos.</th><th>Family Banker</th><th>N&#xB0; Polizze</th><th>Incassato Mag+Giu</th><th>Stato</th></tr></thead>
+        <tbody>{lon_rows}</tbody></table>
+      </div>
+      <div>
+        <div class="tw">
+          <div class="twh"><h3>&#x1F465; Partecipanti</h3><span>Gruppo Onorato ({lon_n_part})</span></div>
+          <div style="padding:14px 18px;line-height:2">{lon_pills}</div>
+        </div>
+        <div class="card gold" style="margin-top:12px">
+          <div class="cico">&#x1F1EC;&#x1F1E7;</div>
+          <p class="cl">Obiettivi doppi per vincere</p>
+          <div style="margin-top:8px">
+            <p style="font-size:.8rem;margin-bottom:6px">&#x1F4CB; <strong>Min. polizze:</strong> 4 nuove polizze nel periodo</p>
+            <p style="font-size:.8rem;margin-bottom:6px">&#x1F4B6; <strong>Min. incassato:</strong> &#x20AC; 5.000 (rate &#x2713; di mag+giu)</p>
+            <p style="font-size:.75rem;color:var(--mut);margin-top:8px;line-height:1.5">La classifica usa l&#x2019;incassato reale delle polizze nuove, non il premio annuo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- end ch-londra -->
+
+</section>
     <div class="twh"><h3>&#x2699;&#xFE0F; Configura Nuova Challenge</h3><span>Seleziona parametri e aggiorna Excel per salvare</span></div>
     <div style="padding:20px 22px">
       <div class="g3" style="margin-bottom:16px">
@@ -1435,6 +1645,13 @@ function showColl(name) {{
 // ─── CHALLENGE INTERATTIVA ───────────────────────────────────────────
 var CH_DATI = {ch_dati_json};
 
+function fmtEur(v) {{
+  var s=String(Math.round(v||0));
+  var r=''; var c=0;
+  for(var i=s.length-1;i>=0;i--){{r=s[i]+(c>0&&c%3===0?'.':'')+r;c++;}}
+  return r;
+}}
+
 function updateChallenge() {{
   // Partecipanti selezionati
   var sel = [];
@@ -1479,7 +1696,7 @@ function updateChallenge() {{
     var vince = vp && (minPa===0 || va);
     var bg = vince ? "background:linear-gradient(90deg,rgba(200,169,81,.1),transparent)" : "";
     var bpol = vp ? "<span class='tag tg'>&#x2713; "+row.pol+" pol.</span>" : (row.pol>0 ? "<span class='tag ta'>"+row.pol+" pol.</span>" : "<span class='tag tr2'>0 pol.</span>");
-    var bpa  = va  ? "<span class='tag tg'>&#x2713; &#x20AC;&#x00A0;"+Math.round(row.pa).toLocaleString('it-IT')+"</span>" : (row.pa>0 ? "<span class='tag ta'>&#x20AC;&#x00A0;"+Math.round(row.pa).toLocaleString('it-IT')+"</span>" : "<span class='tag tr2'>&#x20AC;&#x00A0;0</span>");
+    var bpa  = va  ? "<span class='tag tg'>&#x2713; &#x20AC;&#x00A0;"+fmtEur(Math.round(row.pa))+"</span>" : (row.pa>0 ? "<span class='tag ta'>&#x20AC;&#x00A0;"+fmtEur(Math.round(row.pa))+"</span>" : "<span class='tag tr2'>&#x20AC;&#x00A0;0</span>");
     var stato = vince ? "&#x1F3C6; Vincitore" : (row.pol>0 ? "&#x23F3; In corsa" : "&#x274C; Nessuna pol.");
     var med = i<3 ? medals[i] : (i+1)+"&#xB0;";
     return "<tr style='"+bg+"'><td>"+med+"</td><td><strong>"+row.fb+"</strong></td><td>"+bpol+"</td><td>"+bpa+"</td><td style='font-size:.8rem'>"+stato+"</td></tr>";
@@ -1511,6 +1728,18 @@ function resetChallenge() {{
 
 // Init challenge al caricamento
 document.addEventListener('DOMContentLoaded', function(){{ updateChallenge(); }});
+
+function showChTab(tab) {{
+  var isLondra = tab === 'londra';
+  document.getElementById('ch-standard').style.display = isLondra ? 'none' : 'block';
+  document.getElementById('ch-londra').style.display   = isLondra ? 'block' : 'none';
+  document.querySelectorAll('.ch-tab').forEach(function(btn, i) {{
+    var active = (i===0 && !isLondra) || (i===1 && isLondra);
+    btn.style.borderBottomColor = active ? 'var(--gold)' : 'transparent';
+    btn.style.fontWeight = active ? '600' : '500';
+    btn.style.color = active ? 'var(--navy)' : 'var(--mut)';
+  }});
+}}
 </script>
 </body></html>"""
 
