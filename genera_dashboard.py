@@ -1123,14 +1123,18 @@ try:
         _pf2  = float(_ws2.cell(_rn, 5).value or 0)
         _pa2  = float(_ws2.cell(_rn, 8).value or 0)
         _tip2 = str(_ws2.cell(_rn, 4).value or '').strip()
+        _mag2 = _ws2.cell(_rn, 14).value
+        _giu2 = _ws2.cell(_rn, 15).value
         # Escludi: Protezione Assistenza sempre
         # Escludi: Protezione Casa e Famiglia con premio ANNUO <= 250€
         if _tip2 == 'Protezione Assistenza': continue
         if _tip2 == 'Protezione Casa e Famiglia' and _pa2 <= 250: continue
+        # Conta solo se ha almeno una rata incassata (✓) in maggio o giugno
+        if _mag2 != '✓' and _giu2 != '✓': continue
         _lon_pol[_fb2] = _lon_pol.get(_fb2, 0) + 1
-        if _ws2.cell(_rn, 14).value == '✓':
+        if _mag2 == '✓':
             _lon_inc[_fb2] = _lon_inc.get(_fb2, 0.0) + _pf2
-        if _ws2.cell(_rn, 15).value == '✓':
+        if _giu2 == '✓':
             _lon_inc[_fb2] = _lon_inc.get(_fb2, 0.0) + _pf2
     _wb2.close()
 except Exception as _e:
