@@ -1121,11 +1121,12 @@ try:
         if not (_LON_START <= _dp2 <= _LON_END): continue
         _fb2  = str(_fb2).strip()
         _pf2  = float(_ws2.cell(_rn, 5).value or 0)
+        _pa2  = float(_ws2.cell(_rn, 8).value or 0)
         _tip2 = str(_ws2.cell(_rn, 4).value or '').strip()
         # Escludi: Protezione Assistenza sempre
-        #          Protezione Casa e Famiglia con premio <= 250€
+        # Escludi: Protezione Casa e Famiglia con premio ANNUO <= 250€
         if _tip2 == 'Protezione Assistenza': continue
-        if _tip2 == 'Protezione Casa e Famiglia' and _pf2 <= 250: continue
+        if _tip2 == 'Protezione Casa e Famiglia' and _pa2 <= 250: continue
         _lon_pol[_fb2] = _lon_pol.get(_fb2, 0) + 1
         if _ws2.cell(_rn, 14).value == '✓':
             _lon_inc[_fb2] = _lon_inc.get(_fb2, 0.0) + _pf2
@@ -1136,6 +1137,8 @@ except Exception as _e:
     print(f"Warning calcolo Londra: {_e}")
 
 # Costruisci classifica con tutti i partecipanti
+_lon_all_fb = [fb for fb in _lon_all_fb if fb != 'Maola Daniele']
+
 _lon_class = []
 for _fb3 in _lon_all_fb:
     _lon_class.append({
@@ -1145,6 +1148,7 @@ for _fb3 in _lon_all_fb:
     })
 # Aggiungi eventuali FB con polizze non nella lista partecipanti
 for _fb3, _pv in _lon_pol.items():
+    if _fb3 == 'Maola Daniele': continue
     if not any(r['fb'] == _fb3 for r in _lon_class):
         _lon_class.append({'fb': _fb3, 'pol': _pv, 'inc': round(_lon_inc.get(_fb3, 0.0), 2)})
 
@@ -1159,7 +1163,9 @@ lon_stato_bar = (
 )
 
 lon_rows = ""
-for _i3, _row3 in enumerate(_lon_class):
+_pos3 = 0
+for _row3 in _lon_class:
+    if _row3['fb'] == 'Maola Daniele': continue
     _vp3  = _row3['pol'] >= _LON_MIN_POL
     _vi3  = _row3['inc'] >= _LON_MIN_INC
     _win3 = _vp3 and _vi3
@@ -1168,13 +1174,16 @@ for _i3, _row3 in enumerate(_lon_class):
              else f"<span class='tag {'tr2' if _row3['pol']==0 else 'ta'}'>{_row3['pol']} pol.</span>")
     _bi3  = (f"<span class='tag tg'>&#x2713; {fe(_row3['inc'])}</span>" if _vi3
              else f"<span class='tag {'tr2' if _row3['inc']==0 else 'ta'}'>{fe(_row3['inc'])}</span>")
+    _gap3 = _LON_MIN_INC - _row3['inc']
+    _bgap3 = "<span class='tag tg'>&#x2713; Raggiunto</span>" if _gap3 <= 0 else f"<span class='tag ta'>- {fe(_gap3)}</span>"
     _st3  = ("&#x1F3C6; Vincitore" if _win3
-             else "&#x23F3; Serve incassato" if _vp3
+             else "&#x23F3; Serve inc." if _vp3
              else "&#x23F3; In corsa" if _row3['pol'] > 0
-             else "&#x274C; Nessuna pol.")
-    _med3 = _lon_medals[_i3] if _i3 < len(_lon_medals) else str(_i3 + 1)
+             else "&#x274C; No pol.")
+    _med3 = _lon_medals[_pos3] if _pos3 < len(_lon_medals) else str(_pos3 + 1)
     lon_rows += (f"<tr style='{_bg3}'><td>{_med3}</td><td><strong>{_row3['fb']}</strong></td>"
-                 f"<td>{_bp3}</td><td>{_bi3}</td><td style='font-size:.8rem'>{_st3}</td></tr>")
+                 f"<td>{_bp3}</td><td>{_bi3}</td><td>{_bgap3}</td><td style='font-size:.75rem'>{_st3}</td></tr>")
+    _pos3 += 1
 
 lon_pills  = "".join(
     f"<span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>{_fb3}</span>"
@@ -1514,14 +1523,6 @@ HTML = f"""<!DOCTYPE html>
     <button class="ch-tab" onclick="showChTab('londra')" style="padding:8px 20px;border:none;border-bottom:3px solid transparent;background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--mut);cursor:pointer;margin-bottom:-2px">&#x1F1EC;&#x1F1E7; Challenge Londra</button>
   </div>
 
-    <p class="st">&#x1F3C6; Challenge</p>
-  <p class="ss">Configura partecipanti, periodo e obiettivi &middot; Classifica da Excel</p>
-
-  <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid var(--brd)">
-    <button class="ch-tab on" onclick="showChTab('standard')" style="padding:8px 20px;border:none;border-bottom:3px solid var(--gold);background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:var(--navy);cursor:pointer;margin-bottom:-2px">&#x1F3C6; Challenge Corrente</button>
-    <button class="ch-tab" onclick="showChTab('londra')" style="padding:8px 20px;border:none;border-bottom:3px solid transparent;background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--mut);cursor:pointer;margin-bottom:-2px">&#x1F1EC;&#x1F1E7; Challenge Londra</button>
-  </div>
-
   <div id="ch-standard">
   <!-- CONFIGURATORE CHALLENGE -->
   <div class="tw" style="margin-bottom:16px">
@@ -1593,7 +1594,54 @@ HTML = f"""<!DOCTYPE html>
     </div>
   </div>
   </div><!-- end ch-standard -->
+
+  <div id="ch-londra" style="display:none">
+    <div style="background:linear-gradient(135deg,var(--navy),var(--n3));border-radius:12px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:16px;box-shadow:0 4px 20px rgba(11,30,61,.18)">
+      <div style="font-size:2.5rem;line-height:1">&#x1F1EC;&#x1F1E7;</div>
+      <div>
+        <p style="font-family:'Playfair Display',serif;color:var(--g2);font-size:1.2rem;font-weight:700;margin-bottom:3px">Challenge Londra 2026</p>
+        <p style="color:rgba(255,255,255,.55);font-size:.75rem">1 Maggio &mdash; 30 Giugno 2026 &middot; Gruppo Onorato</p>
+        <p style="color:rgba(255,255,255,.38);font-size:.67rem;margin-top:4px;font-style:italic">Solo incassato di nuove polizze sottoscritte nel periodo: non contano le rate di polizze precedenti</p>
+      </div>
+      <div style="margin-left:auto;text-align:right;flex-shrink:0">
+        <p style="font-family:'Outfit',sans-serif;color:var(--gold);font-size:1.4rem;font-weight:700;line-height:1">&#x20AC; 5.000</p>
+        <p style="color:rgba(255,255,255,.45);font-size:.63rem;margin-top:2px">Min. incassato</p>
+        <p style="font-family:'Outfit',sans-serif;color:var(--g2);font-size:1rem;font-weight:600;margin-top:6px;line-height:1">4 polizze</p>
+        <p style="color:rgba(255,255,255,.45);font-size:.63rem;margin-top:2px">Min. polizze</p>
+      </div>
+    </div>
+    <div class="g2" style="align-items:start">
+      <div class="tw">
+        <div class="twh"><h3>&#x1F4CA; Classifica Challenge Londra</h3><span>01/05/2026 &ndash; 30/06/2026</span></div>
+        <div style="padding:10px 18px;background:var(--cream);border-bottom:1px solid var(--brd);display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+          <span class="tag bb">Min. Polizze: 4</span>
+          <span class="tag bn">Min. Incassato: &#x20AC; 5.000</span>
+          {lon_stato_bar}
+        </div>
+        <table style="white-space:nowrap;font-size:.75rem"><thead><tr><th>Pos.</th><th>Family Banker</th><th>N&#xB0; Pol.</th><th>Incassato</th><th>Manca a € 5.000</th><th style="min-width:80px">Stato</th></tr></thead>
+        <tbody>{lon_rows}</tbody></table>
+      </div>
+      <div>
+        <div class="tw">
+          <div class="twh"><h3>&#x1F465; Partecipanti</h3><span>Gruppo Onorato ({lon_n_part})</span></div>
+          <div style="padding:14px 18px;line-height:2">{lon_pills}</div>
+        </div>
+        <div class="card gold" style="margin-top:12px">
+          <div class="cico">&#x1F1EC;&#x1F1E7;</div>
+          <p class="cl">Obiettivi doppi per vincere</p>
+          <div style="margin-top:8px">
+            <p style="font-size:.8rem;margin-bottom:6px">&#x1F4CB; <strong>Min. polizze:</strong> 4 nuove polizze nel periodo</p>
+            <p style="font-size:.8rem;margin-bottom:6px">&#x1F4B6; <strong>Min. incassato:</strong> &#x20AC; 5.000 (rate &#x2713; di mag+giu)</p>
+            <p style="font-size:.75rem;color:var(--mut);margin-top:8px;line-height:1.5">La classifica usa l&#x2019;incassato reale delle polizze nuove, non il premio annuo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- end ch-londra -->
+
 </section>
+
+</div>
 <footer style="background:var(--navy);color:rgba(255,255,255,.3);text-align:center;padding:14px;font-size:.65rem;letter-spacing:.05em;border-top:1px solid var(--gold)">
   <span style="color:var(--gold)">FAMILY PROTECTION SPECIALIST</span> &nbsp;&middot;&nbsp; Dashboard KPI 2026 &nbsp;&middot;&nbsp; Aggiornato il {oggi} &nbsp;&middot;&nbsp; Uso interno riservato
 </footer>
