@@ -348,14 +348,6 @@ tbody td:first-child{padding-left:18px;font-weight:500}
     <button class="ch-tab" onclick="showChTab('londra')" style="padding:8px 20px;border:none;border-bottom:3px solid transparent;background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--mut);cursor:pointer;margin-bottom:-2px">&#x1F1EC;&#x1F1E7; Challenge Londra</button>
   </div>
 
-    <p class="st">&#x1F3C6; Challenge</p>
-  <p class="ss">Configura partecipanti, periodo e obiettivi &middot; Classifica da Excel</p>
-
-  <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid var(--brd)">
-    <button class="ch-tab on" onclick="showChTab('standard')" style="padding:8px 20px;border:none;border-bottom:3px solid var(--gold);background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:var(--navy);cursor:pointer;margin-bottom:-2px">&#x1F3C6; Challenge Corrente</button>
-    <button class="ch-tab" onclick="showChTab('londra')" style="padding:8px 20px;border:none;border-bottom:3px solid transparent;background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--mut);cursor:pointer;margin-bottom:-2px">&#x1F1EC;&#x1F1E7; Challenge Londra</button>
-  </div>
-
   <div id="ch-standard">
   <!-- CONFIGURATORE CHALLENGE -->
   <div class="tw" style="margin-bottom:16px">
@@ -427,7 +419,54 @@ tbody td:first-child{padding-left:18px;font-weight:500}
     </div>
   </div>
   </div><!-- end ch-standard -->
+
+  <div id="ch-londra" style="display:none">
+    <div style="background:linear-gradient(135deg,var(--navy),var(--n3));border-radius:12px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:16px;box-shadow:0 4px 20px rgba(11,30,61,.18)">
+      <div style="font-size:2.5rem;line-height:1">&#x1F1EC;&#x1F1E7;</div>
+      <div>
+        <p style="font-family:'Playfair Display',serif;color:var(--g2);font-size:1.2rem;font-weight:700;margin-bottom:3px">Challenge Londra 2026</p>
+        <p style="color:rgba(255,255,255,.55);font-size:.75rem">1 Maggio &mdash; 30 Giugno 2026 &middot; Gruppo Onorato</p>
+        <p style="color:rgba(255,255,255,.38);font-size:.67rem;margin-top:4px;font-style:italic">Solo incassato di nuove polizze sottoscritte nel periodo: non contano le rate di polizze precedenti</p>
+      </div>
+      <div style="margin-left:auto;text-align:right;flex-shrink:0">
+        <p style="font-family:'Outfit',sans-serif;color:var(--gold);font-size:1.4rem;font-weight:700;line-height:1">&#x20AC; 5.000</p>
+        <p style="color:rgba(255,255,255,.45);font-size:.63rem;margin-top:2px">Min. incassato</p>
+        <p style="font-family:'Outfit',sans-serif;color:var(--g2);font-size:1rem;font-weight:600;margin-top:6px;line-height:1">4 polizze</p>
+        <p style="color:rgba(255,255,255,.45);font-size:.63rem;margin-top:2px">Min. polizze</p>
+      </div>
+    </div>
+    <div class="g2" style="align-items:start">
+      <div class="tw">
+        <div class="twh"><h3>&#x1F4CA; Classifica Challenge Londra</h3><span>01/05/2026 &ndash; 30/06/2026</span></div>
+        <div style="padding:10px 18px;background:var(--cream);border-bottom:1px solid var(--brd);display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+          <span class="tag bb">Min. Polizze: 4</span>
+          <span class="tag bn">Min. Incassato: &#x20AC; 5.000</span>
+          <span class="tag tg" style="margin-left:auto">&#x1F7E2; Challenge in corso &mdash; agg. 19/05/2026</span>
+        </div>
+        <table style="white-space:nowrap;font-size:.75rem"><thead><tr><th>Pos.</th><th>Family Banker</th><th>N&#xB0; Pol.</th><th>Incassato</th><th>Manca a € 5.000</th><th style="min-width:80px">Stato</th></tr></thead>
+        <tbody><tr style=''><td>&#x1F947;</td><td><strong>Cristofari Rita</strong></td><td><span class='tag ta'>2 pol.</span></td><td><span class='tag ta'>€ 256</span></td><td><span class='tag ta'>- € 4.744</span></td><td style='font-size:.75rem'>&#x23F3; In corsa</td></tr><tr style=''><td>&#x1F948;</td><td><strong>Lolletti Benedetto</strong></td><td><span class='tag ta'>3 pol.</span></td><td><span class='tag ta'>€ 208</span></td><td><span class='tag ta'>- € 4.792</span></td><td style='font-size:.75rem'>&#x23F3; In corsa</td></tr><tr style=''><td>&#x1F949;</td><td><strong>Rizza Andrea</strong></td><td><span class='tag ta'>1 pol.</span></td><td><span class='tag ta'>€ 90</span></td><td><span class='tag ta'>- € 4.910</span></td><td style='font-size:.75rem'>&#x23F3; In corsa</td></tr><tr style=''><td>4&#xB0;</td><td><strong>Galieti Fabio</strong></td><td><span class='tag ta'>2 pol.</span></td><td><span class='tag ta'>€ 47</span></td><td><span class='tag ta'>- € 4.953</span></td><td style='font-size:.75rem'>&#x23F3; In corsa</td></tr><tr style=''><td>5&#xB0;</td><td><strong>Gallo Armando</strong></td><td><span class='tag ta'>1 pol.</span></td><td><span class='tag ta'>€ 43</span></td><td><span class='tag ta'>- € 4.957</span></td><td style='font-size:.75rem'>&#x23F3; In corsa</td></tr><tr style=''><td>6&#xB0;</td><td><strong>Mazzetta Alessandra</strong></td><td><span class='tag ta'>1 pol.</span></td><td><span class='tag ta'>€ 43</span></td><td><span class='tag ta'>- € 4.957</span></td><td style='font-size:.75rem'>&#x23F3; In corsa</td></tr><tr style=''><td>7&#xB0;</td><td><strong>Pozzana Patrizia</strong></td><td><span class='tag ta'>2 pol.</span></td><td><span class='tag ta'>€ 13</span></td><td><span class='tag ta'>- € 4.987</span></td><td style='font-size:.75rem'>&#x23F3; In corsa</td></tr><tr style=''><td>8&#xB0;</td><td><strong>Curra Isabella</strong></td><td><span class='tag ta'>1 pol.</span></td><td><span class='tag tr2'>€ 0</span></td><td><span class='tag ta'>- € 5.000</span></td><td style='font-size:.75rem'>&#x23F3; In corsa</td></tr><tr style=''><td>9&#xB0;</td><td><strong>De Marco Fabio</strong></td><td><span class='tag ta'>1 pol.</span></td><td><span class='tag tr2'>€ 0</span></td><td><span class='tag ta'>- € 5.000</span></td><td style='font-size:.75rem'>&#x23F3; In corsa</td></tr><tr style=''><td>10&#xB0;</td><td><strong>Grifoni Cristiana</strong></td><td><span class='tag ta'>1 pol.</span></td><td><span class='tag tr2'>€ 0</span></td><td><span class='tag ta'>- € 5.000</span></td><td style='font-size:.75rem'>&#x23F3; In corsa</td></tr><tr style=''><td>11&#xB0;</td><td><strong>Alzetta Stefano</strong></td><td><span class='tag tr2'>0 pol.</span></td><td><span class='tag tr2'>€ 0</span></td><td><span class='tag ta'>- € 5.000</span></td><td style='font-size:.75rem'>&#x274C; No pol.</td></tr><tr style=''><td>12&#xB0;</td><td><strong>Cangemi Francesco</strong></td><td><span class='tag tr2'>0 pol.</span></td><td><span class='tag tr2'>€ 0</span></td><td><span class='tag ta'>- € 5.000</span></td><td style='font-size:.75rem'>&#x274C; No pol.</td></tr><tr style=''><td>13&#xB0;</td><td><strong>Cimaschi Matteo</strong></td><td><span class='tag tr2'>0 pol.</span></td><td><span class='tag tr2'>€ 0</span></td><td><span class='tag ta'>- € 5.000</span></td><td style='font-size:.75rem'>&#x274C; No pol.</td></tr><tr style=''><td>14&#xB0;</td><td><strong>Di Marcello Sabrina</strong></td><td><span class='tag tr2'>0 pol.</span></td><td><span class='tag tr2'>€ 0</span></td><td><span class='tag ta'>- € 5.000</span></td><td style='font-size:.75rem'>&#x274C; No pol.</td></tr><tr style=''><td>15&#xB0;</td><td><strong>Ercolino Giovanni</strong></td><td><span class='tag tr2'>0 pol.</span></td><td><span class='tag tr2'>€ 0</span></td><td><span class='tag ta'>- € 5.000</span></td><td style='font-size:.75rem'>&#x274C; No pol.</td></tr><tr style=''><td>16&#xB0;</td><td><strong>Gallo Tiziano</strong></td><td><span class='tag tr2'>0 pol.</span></td><td><span class='tag tr2'>€ 0</span></td><td><span class='tag ta'>- € 5.000</span></td><td style='font-size:.75rem'>&#x274C; No pol.</td></tr><tr style=''><td>17&#xB0;</td><td><strong>Onorato Beniamino</strong></td><td><span class='tag tr2'>0 pol.</span></td><td><span class='tag tr2'>€ 0</span></td><td><span class='tag ta'>- € 5.000</span></td><td style='font-size:.75rem'>&#x274C; No pol.</td></tr><tr style=''><td>18&#xB0;</td><td><strong>Santachiara Manuel</strong></td><td><span class='tag tr2'>0 pol.</span></td><td><span class='tag tr2'>€ 0</span></td><td><span class='tag ta'>- € 5.000</span></td><td style='font-size:.75rem'>&#x274C; No pol.</td></tr></tbody></table>
+      </div>
+      <div>
+        <div class="tw">
+          <div class="twh"><h3>&#x1F465; Partecipanti</h3><span>Gruppo Onorato (18)</span></div>
+          <div style="padding:14px 18px;line-height:2"><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Alzetta Stefano</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Cangemi Francesco</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Cimaschi Matteo</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Cristofari Rita</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Curra Isabella</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>De Marco Fabio</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Di Marcello Sabrina</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Ercolino Giovanni</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Galieti Fabio</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Gallo Armando</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Gallo Tiziano</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Grifoni Cristiana</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Lolletti Benedetto</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Mazzetta Alessandra</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Onorato Beniamino</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Pozzana Patrizia</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Rizza Andrea</span><span style='display:inline-block;background:var(--cream);border:1px solid var(--brd);border-radius:20px;padding:3px 10px;font-size:.72rem;margin:2px'>Santachiara Manuel</span></div>
+        </div>
+        <div class="card gold" style="margin-top:12px">
+          <div class="cico">&#x1F1EC;&#x1F1E7;</div>
+          <p class="cl">Obiettivi doppi per vincere</p>
+          <div style="margin-top:8px">
+            <p style="font-size:.8rem;margin-bottom:6px">&#x1F4CB; <strong>Min. polizze:</strong> 4 nuove polizze nel periodo</p>
+            <p style="font-size:.8rem;margin-bottom:6px">&#x1F4B6; <strong>Min. incassato:</strong> &#x20AC; 5.000 (rate &#x2713; di mag+giu)</p>
+            <p style="font-size:.75rem;color:var(--mut);margin-top:8px;line-height:1.5">La classifica usa l&#x2019;incassato reale delle polizze nuove, non il premio annuo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- end ch-londra -->
+
 </section>
+
+</div>
 <footer style="background:var(--navy);color:rgba(255,255,255,.3);text-align:center;padding:14px;font-size:.65rem;letter-spacing:.05em;border-top:1px solid var(--gold)">
   <span style="color:var(--gold)">FAMILY PROTECTION SPECIALIST</span> &nbsp;&middot;&nbsp; Dashboard KPI 2026 &nbsp;&middot;&nbsp; Aggiornato il 19/05/2026 &nbsp;&middot;&nbsp; Uso interno riservato
 </footer>
