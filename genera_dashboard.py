@@ -1514,7 +1514,14 @@ HTML = f"""<!DOCTYPE html>
     <button class="ch-tab" onclick="showChTab('londra')" style="padding:8px 20px;border:none;border-bottom:3px solid transparent;background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--mut);cursor:pointer;margin-bottom:-2px">&#x1F1EC;&#x1F1E7; Challenge Londra</button>
   </div>
 
-  <div id="ch-standard">
+    <p class="st">&#x1F3C6; Challenge</p>
+  <p class="ss">Configura partecipanti, periodo e obiettivi &middot; Classifica da Excel</p>
+
+  <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:2px solid var(--brd)">
+    <button class="ch-tab on" onclick="showChTab('standard')" style="padding:8px 20px;border:none;border-bottom:3px solid var(--gold);background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;color:var(--navy);cursor:pointer;margin-bottom:-2px">&#x1F3C6; Challenge Corrente</button>
+    <button class="ch-tab" onclick="showChTab('londra')" style="padding:8px 20px;border:none;border-bottom:3px solid transparent;background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--mut);cursor:pointer;margin-bottom:-2px">&#x1F1EC;&#x1F1E7; Challenge Londra</button>
+  </div>
+
   <div id="ch-standard">
   <!-- CONFIGURATORE CHALLENGE -->
   <div class="tw" style="margin-bottom:16px">
@@ -1586,8 +1593,7 @@ HTML = f"""<!DOCTYPE html>
     </div>
   </div>
   </div><!-- end ch-standard -->
-
-</div><!-- end ch-standard -->
+</section>
 <footer style="background:var(--navy);color:rgba(255,255,255,.3);text-align:center;padding:14px;font-size:.65rem;letter-spacing:.05em;border-top:1px solid var(--gold)">
   <span style="color:var(--gold)">FAMILY PROTECTION SPECIALIST</span> &nbsp;&middot;&nbsp; Dashboard KPI 2026 &nbsp;&middot;&nbsp; Aggiornato il {oggi} &nbsp;&middot;&nbsp; Uso interno riservato
 </footer>
