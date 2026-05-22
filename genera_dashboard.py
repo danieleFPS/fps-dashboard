@@ -1194,6 +1194,17 @@ lon_pills  = "".join(
     for _fb3 in _lon_all_fb)
 lon_n_part = len(_lon_all_fb)
 
+# ─── POLIZZE IN LAVORAZIONE ─────────────────────────────────────────
+lav_list = sorted(D['polLavorazione'], key=lambda x: (x['fb'], x['cliente']))
+lav_rows = ""
+for _l in lav_list:
+    lav_rows += (f"<tr><td>{_l['fb']}</td><td>{_l['cliente']}</td>"
+                 f"<td>{_l['tipoPol']}</td>"
+                 f"<td class='num'>{fe(_l['premioFirma'])}</td>"
+                 f"<td class='num'>{fe(_l['premioAnnuo'])}</td></tr>")
+n_lav = len(lav_list)
+tot_lav_pa = fe(sum(_l['premioAnnuo'] for _l in lav_list))
+
 CSS = """
 :root{--navy:#0B1E3D;--n2:#142952;--n3:#1E3A6E;--gold:#C8A951;--g2:#E8CC7A;--cream:#FAF6EE;--w:#fff;--gr:#2E8B5F;--gr2:#3BA870;--red:#C0392B;--amb:#D97706;--mut:#64748B;--brd:rgba(200,169,81,.2);--sh:0 2px 14px rgba(11,30,61,.07);--sh2:0 6px 28px rgba(11,30,61,.13)}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1381,6 +1392,14 @@ HTML = f"""<!DOCTYPE html>
     </div>
     <div><div class="bch">{prod_html}</div><div class="g3">{top3}</div></div>
   </div>
+
+  <!-- POLIZZE IN LAVORAZIONE -->
+  <div class="tw" style="margin-top:20px">
+    <div class="twh"><h3>&#x2699;&#xFE0F; Polizze in Lavorazione</h3><span>{n_lav} polizze &middot; Premio Annuo Totale: {tot_lav_pa}</span></div>
+    <table><thead><tr><th>Family Banker</th><th>Cliente</th><th>Tipo Polizza</th><th>Premio Firma</th><th>Premio Annuo</th></tr></thead>
+    <tbody>{lav_rows}</tbody></table>
+  </div>
+
 </section>
 
 <section class="sec" id="s-fb">
