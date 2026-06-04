@@ -198,7 +198,8 @@ for i in range(3, 400):
     if s(r[8]) == 'In lavorazione' and isFB(s(r[1])):
         D['polLavorazione'].append({
             'fb': s(r[1]), 'cliente': s(r[2]), 'tipoPol': s(r[3]),
-            'premioFirma': round(n(r[4]), 2), 'premioAnnuo': round(n(r[7]), 2)
+            'premioFirma': round(n(r[4]), 2), 'premioAnnuo': round(n(r[7]), 2),
+            'dataPolizza': r[6], 'incassoResiduo': round(n(r[24]), 2)
         })
 
 # Challenge sheet
@@ -371,7 +372,9 @@ RL = D['ritmoFB']
 PL_data = D['polLavorazione']
 
 pct_pi = round(G['premiIncassati'] / max(G['premioAnnuo'], 1) * 100)
-pol_lav_pa = sum(p['premioAnnuo'] for p in PL_data)
+pol_lav_pa  = sum(p['premioAnnuo'] for p in PL_data)
+pol_lav_pf  = sum(p['premioFirma'] for p in PL_data)
+pol_lav_2026 = sum(p['incassoResiduo'] for p in PL_data)
 fbA = sum(1 for k in KB.values() if k['statoAttivo'] == 'green')
 fbTot = 19
 pct_fba = round(fbA / max(fbTot, 1) * 100)
@@ -402,9 +405,8 @@ kpi2 = (
     + card("Residuo da Incassare 2026", fe(G['residuo2026']),
            f"+ {fe(G['residuo2027'])} nel 2027", "red", "📉",
            bdg=badge("ba", f"Tot: {fe(G['totResiduo'])}"))
-    + card("Polizze in Lavorazione", fn(len(PL_data)),
-           f"Premio Annuo: {fe(pol_lav_pa)}", "", "⚙️",
-           bdg=badge("bn", "Da processare"))
+    + card("Polizze in Lavorazione", f"{fn(len(PL_data))} <span style='font-size:.65rem;background:var(--n3);color:#fff;padding:2px 8px;border-radius:10px;vertical-align:middle'>Da processare</span>",
+           f"Premio Annuo: {fe(pol_lav_pa)}<br><span style='font-size:.75rem;color:var(--mut)'>Premio Firma tot.: {fe(pol_lav_pf)}</span><br><span style='font-size:.75rem;color:var(--mut)'>Incasso previsto 2026: {fe(pol_lav_2026)}</span>", "", "⚙️")
 )
 
 # KPI Row 3: Appt Comunicati, Tasso Conv, FB Attivi, Callback
@@ -530,35 +532,35 @@ for c in D['collaboratori']:
     kb = KB.get(nm, {})
     rv = RL.get(nm, {})
     actv = kb.get('statoAttivo', 'neutral')
-    pO = kb.get('premiIncassati', 0) / max(c['objPremio'], 1) if c['objPremio'] else 0
-    pW = min(max(round(pO * 100), 0), 100)
-    pc_col = "#2E8B5F" if pO >= 0.5 else "#D97706" if pO >= 0.2 else "#C0392B"
     dlt = kb.get('deltaObj', 0)
     dtag = tag("tg", f"+{dlt}") if dlt >= 0 else tag("ta", str(dlt)) if dlt == -1 else tag("tr2", str(dlt))
     cb = kb.get('callback', 0)
     cbtag = tag("ta", str(cb)) if cb > 0 else f'<span style="color:#94A3B8">0</span>'
     proj = fe(rv['proiezione']) if rv.get('proiezione', 0) > 0 else "&#x2014;"
     proj_col = "#2E8B5F" if "↑" in rv.get('stato', '') else "#64748B"
+    # Lavorazione data for this FB
+    fb_lav = [p for p in PL_data if p['fb'] == nm]
+    n_lav_fb = len(fb_lav)
+    pf_lav_fb = sum(p['premioFirma'] for p in fb_lav)
+    lav_cell = f'<span class="num" style="color:#D97706;font-weight:600">{n_lav_fb}</span>' if n_lav_fb > 0 else '<span style="color:#94A3B8">0</span>'
+    pf_lav_cell = f'<span class="num" style="color:#D97706">{fe(pf_lav_fb)}</span>' if pf_lav_fb > 0 else '<span style="color:#94A3B8">&#x2014;</span>'
+    # Bigger dot
+    dot_big = (f'<span style="font-size:1.8rem;line-height:1;color:#2E8B5F">&#x25CF;</span>' if actv == 'green' else
+               f'<span style="font-size:1.8rem;line-height:1;color:#D97706">&#x25CF;</span>' if actv == 'amber' else
+               f'<span style="font-size:1.8rem;line-height:1;color:#C0392B">&#x25CF;</span>' if actv == 'red' else
+               f'<span style="font-size:1.8rem;line-height:1;color:#94A3B8">&#x25CF;</span>')
     fb_rows += (
         f'<tr>'
         f'<td>{nm}</td>'
         f'<td style="font-size:.67rem;color:#64748B">{c["fbo"]}</td>'
-        f'<td class="num">{kb.get("apptTot",0)}</td>'
-        f'<td><strong class="num">{kb.get("polizze",0)}</strong></td>'
-        f'<td style="font-size:.68rem">{c["objMese"]}/m</td>'
-        f'<td style="font-size:1.1rem">{dot(actv)}</td>'
-        f'<td class="num">{fe(kb.get("premioAnnuo",0))}</td>'
-        f'<td class="num">{fe(kb.get("premiIncassati",0))}</td>'
-        f'<td class="num">{fe(c["objPremio"]) if c["objPremio"] else "&#x2014;"}</td>'
-        f'<td>'
-        f'<div style="display:flex;align-items:center;gap:5px">'
-        f'<div style="flex:1;background:#FAF6EE;border-radius:2px;height:4px;overflow:hidden;min-width:40px">'
-        f'<div style="height:100%;width:{pW}%;background:{pc_col};border-radius:2px"></div></div>'
-        f'<span class="num" style="font-size:.65rem;color:{pc_col}">{round(pO*100)}%</span>'
-        f'</div></td>'
-        f'<td>{cbtag}</td>'
-        f'<td>{dtag}</td>'
-        f'<td class="num" style="color:{proj_col}">{proj}</td>'
+        f'<td class="num" style="text-align:center">{kb.get("apptTot",0)}</td>'
+        f'<td style="text-align:center"><strong class="num">{kb.get("polizze",0)}</strong></td>'
+        f'<td style="text-align:center">{dot_big}</td>'
+        f'<td class="num" style="text-align:center">{fe(kb.get("premioAnnuo",0))}</td>'
+        f'<td class="num" style="text-align:center">{fe(kb.get("premiIncassati",0))}</td>'
+        f'<td style="text-align:center">{lav_cell}</td>'
+        f'<td style="text-align:center">{pf_lav_cell}</td>'
+        f'<td style="text-align:center">{cbtag}</td>'
         f'</tr>'
     )
 
@@ -1259,7 +1261,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy)}
 .twh h3{font-family:'Playfair Display',serif;font-size:.87rem;color:var(--navy);font-weight:600}
 .twh span{font-size:.62rem;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
 table{width:100%;border-collapse:collapse}
-thead th{background:var(--navy);color:rgba(255,255,255,.8);font-size:.58rem;text-transform:uppercase;letter-spacing:.07em;padding:9px 11px;text-align:left;font-weight:500;white-space:nowrap}
+thead th{background:var(--navy);color:rgba(255,255,255,.8);font-size:.58rem;text-transform:uppercase;letter-spacing:.07em;padding:11px 11px;text-align:center;font-weight:500;white-space:normal;line-height:1.4;vertical-align:middle}
 thead th:first-child{padding-left:18px}
 tbody tr{border-bottom:1px solid rgba(11,30,61,.04)}
 tbody tr:hover{background:rgba(11,30,61,.016)}
@@ -1417,9 +1419,9 @@ HTML = f"""<!DOCTYPE html>
   </div>
   <div class="g4">{fbsum}</div>
   <div class="tw">
-    <div class="twh"><h3>&#x1F465; Tutti i Family Banker &mdash; Performance YTD</h3><span>Verde pol&ge;4 &middot; Arancione pol&ge;2 &middot; Rosso pol&lt;2</span></div>
+    <div class="twh"><h3>&#x1F465; Tutti i Family Banker &mdash; Performance YTD</h3><span>&#x25CF; Verde pol&ge;{MESE_CORR} &middot; &#x25CF; Arancione pol&ge;{MESE_CORR-2} &middot; &#x25CF; Rosso pol&lt;{MESE_CORR-2}</span></div>
     <div style="overflow-x:auto">
-    <table><thead><tr><th>Family Banker</th><th>FBO</th><th>Appt</th><th>Pol.</th><th>Obj/M</th><th>Attivo</th><th>Premio Annuo</th><th>Premi Inc.</th><th>Obj Premio</th><th>% Obj</th><th>CB</th><th>Delta</th><th>Proiezione</th></tr></thead>
+    <table><thead><tr><th>Family Banker</th><th>FBO</th><th>N°<br>App.ti</th><th>N°<br>Polizze</th><th>Attivo</th><th>Premio<br>Annuo</th><th>Premi<br>Incassati</th><th style="max-width:60px">Polizze in<br>Lavorazione</th><th style="max-width:80px">Premio alla Firma<br>in Lavorazione</th><th>CB</th></tr></thead>
     <tbody>{fb_rows}</tbody></table></div>
   </div>
   <div class="g3">{top5}</div>
