@@ -184,7 +184,8 @@ for i in range(4, len(gj_sheet)):
         'esito': s(r[11]), 'callbackData': s(r[12]),
         'tipoPol': s(r[13]), 'premioFirma': 0.0 if math.isnan(pf) else round(pf, 2),
         'frazionamento': s(r[15]), 'premioAnnuo': 0.0 if math.isnan(pa) else round(pa, 2),
-        'dataPolizza': dp, 'statoPolizza': s(r[20]), 'tipoAtt': ta
+        'dataPolizza': dp, 'statoPolizza': s(r[20]), 'tipoAtt': ta,
+        'data': r[0] if hasattr(r[0], 'strftime') else None
     })
 
 # Controllo Rate
@@ -266,12 +267,32 @@ for r in D['giornalieri']:
 
 MB = [m[:3].upper() for m in mesi_raw]
 pol_mese = [sum((PM.get(fb, {}).get(m, 0)) for fb in FBS) for m in mesi_raw]
-pa_mese = [round(sum(r['premioAnnuo'] for r in D['giornalieri']
+
+# Premio alla Firma per mese di sottoscrizione (data appuntamento)
+pf_mese = [round(sum(r['premioFirma'] for r in D['giornalieri']
                      if r['mese'] == m and r['esito'] == 'Sottoscritto'), 2)
            for m in mesi_raw]
-tot_pol = sum(pol_mese)
-tot_pi = D['kpiGen']['premiIncassati']
-pi_mese = [round(p / tot_pol * tot_pi, 2) if tot_pol > 0 else 0 for p in pol_mese]
+
+# Incassato per mese di decorrenza (data polizza nel Controllo Rate, solo Processata)
+_inc_cr = {}
+try:
+    _ct_inc = xl['💳 Controllo Rate']
+    import pandas as _pd2
+    for _ii2 in range(3, 600):
+        try: _rr2 = _ct_inc.iloc[_ii2].to_list()
+        except: break
+        _dp2 = _rr2[6]
+        _sta2 = s(_rr2[8])
+        if _sta2 != 'Processata': continue
+        try:
+            if hasattr(_dp2, 'to_pydatetime'): _dp2 = _dp2.to_pydatetime()
+            if not isinstance(_dp2, __import__('datetime').datetime): continue
+        except: continue
+        _mn2 = MESI_ORD[_dp2.month - 1] + ' ' + str(_dp2.year)
+        _inc_cr[_mn2] = _inc_cr.get(_mn2, 0) + n(_rr2[4])
+except: pass
+
+pi_mese = [round(_inc_cr.get(m, 0), 2) for m in mesi_raw]
 
 # ─── SVG SMOOTH LINE CHART ──────────────────────────────────────────
 def smooth_svg(mb, values, color):
@@ -347,7 +368,7 @@ for m in MB:
     else:
         inc_mese.append(0)
 
-SVG_PA = smooth_svg(MB, pa_mese, "#0B1E3D")
+SVG_PA = smooth_svg(MB, pf_mese, "#0B1E3D")
 SVG_PI = smooth_svg(MB, pi_mese, "#2E8B5F")
 
 # ─── CARD HELPER ────────────────────────────────────────────────────
@@ -709,7 +730,7 @@ def _tcard(i):
         f"<div class='card gold'>"
         f"<div class='cico'>&#x1F4C5;</div>"
         f"<p class='cl'>{MB[i]}</p>"
-        f"<p style='font-family:Outfit,sans-serif;font-size:1.25rem;font-weight:700;color:var(--navy);line-height:1.2;margin-bottom:4px'>{fe(pa_mese[i])} <span style='font-size:.65rem;color:var(--mut);font-weight:400'>PA</span></p>"
+        f"<p style='font-family:Outfit,sans-serif;font-size:1.25rem;font-weight:700;color:var(--navy);line-height:1.2;margin-bottom:4px'>{fe(pf_mese[i])} <span style='font-size:.65rem;color:var(--mut);font-weight:400'>Firma</span></p>"
         f"<p style='font-family:Outfit,sans-serif;font-size:1.25rem;font-weight:700;color:var(--gr);line-height:1.2;margin-bottom:6px'>{fe(pi_mese[i])} <span style='font-size:.65rem;color:var(--mut);font-weight:400'>Inc.</span></p>"
         f"<p style='font-family:Outfit,sans-serif;font-size:.92rem;font-weight:600;color:var(--mut)'>{tPol[i]} pol &middot; {tApp[i]} appt</p>"
         f"</div>"
@@ -1207,6 +1228,81 @@ for _l in lav_list:
 n_lav = len(lav_list)
 tot_lav_pa = fe(sum(_l['premioAnnuo'] for _l in lav_list))
 
+# ─── PORTAFOGLIO CLIENTI ─────────────────────────────────────────────
+# Build from Dati Giornalieri + Controllo Rate
+# cr_lookup: (fb, cliente, tipoPol) -> {data_polizza, stato, premioFirma}
+_cr_lookup = {}
+try:
+    _ct_pf = xl['💳 Controllo Rate']
+    import datetime as _dtt
+    for _ii in range(3, 600):
+        try: _rr = _ct_pf.iloc[_ii].to_list()
+        except: break
+        _fb_cr = s(_rr[1]); _cli_cr = s(_rr[2]); _tip_cr = s(_rr[3])
+        if not _fb_cr or not _cli_cr: continue
+        _dp_cr = _rr[6]
+        if hasattr(_dp_cr, 'to_pydatetime'): _dp_cr = _dp_cr.to_pydatetime()
+        _key = (_fb_cr, _cli_cr, _tip_cr)
+        _cr_lookup[_key] = {
+            'data_polizza': _dp_cr if isinstance(_dp_cr, _dtt.datetime) else None,
+            'stato': s(_rr[8]),
+            'premioFirma': n(_rr[4]),
+            'premioAnnuo': n(_rr[7])
+        }
+except Exception as _e:
+    pass
+
+pf_rows = ""
+_pf_count = {'proc': 0, 'lav': 0, 'ann': 0}
+for _r in sorted(D['giornalieri'], key=lambda x: (x.get('data') if hasattr(x.get('data'), 'strftime') else __import__('datetime').datetime.min), reverse=True):
+    if _r['esito'] != 'Sottoscritto': continue
+    _fb2 = _r['fb']; _cli2 = _r['cliente']; _tip2 = _r['tipoPol']
+    _pf2 = _r['premioFirma']; _pa2 = _r['premioAnnuo']
+    _fraz2 = _r['frazionamento']
+    _da2 = _r.get('data')
+    _da_str = _da2.strftime('%d/%m/%Y') if isinstance(_da2, __import__('datetime').datetime) else '—'
+    # Get from CR
+    _cr = _cr_lookup.get((_fb2, _cli2, _tip2), {})
+    _dp_str = _cr['data_polizza'].strftime('%d/%m/%Y') if _cr.get('data_polizza') else '—'
+    _stato = _cr.get('stato', '—')
+    _pf_real = _cr.get('premioFirma', _pf2)
+    # Status tag
+    if _stato == 'Processata':
+        _stag = "<span class='tag tg'>&#x2713; Processata</span>"
+        _pf_count['proc'] += 1
+    elif _stato == 'In lavorazione':
+        _stag = "<span class='tag ta'>&#x23F3; In lavorazione</span>"
+        _pf_count['lav'] += 1
+    elif _stato == 'Annullata':
+        _stag = "<span class='tag tr2'>&#x274C; Annullata</span>"
+        _pf_count['ann'] += 1
+    else:
+        _stag = f"<span class='tag tn'>{_stato}</span>"
+    pf_rows += (
+        f"<tr>"
+        f"<td>{_fb2}</td>"
+        f"<td>{_cli2}</td>"
+        f"<td style='font-size:.75rem'>{_tip2}</td>"
+        f"<td style='font-size:.75rem;text-align:center'>{_fraz2}</td>"
+        f"<td class='num' style='text-align:center'>{fe(_pf_real)}</td>"
+        f"<td style='text-align:center;font-size:.75rem'>{_da_str}</td>"
+        f"<td style='text-align:center;font-size:.75rem'>{_dp_str}</td>"
+        f"<td style='text-align:center'>{_stag}</td>"
+        f"</tr>"
+    )
+pf_proc = _pf_count['proc']
+pf_lav  = _pf_count['lav']
+pf_ann  = _pf_count['ann']
+
+# Polizze mensili/annuali e premio medio (solo processate)
+_pf_mensile  = sum(1 for _r in D['giornalieri'] if _r['esito'] == 'Sottoscritto' and _cr_lookup.get((_r['fb'], _r['cliente'], _r['tipoPol']), {}).get('stato') == 'Processata' and _r['frazionamento'] == 'Mensile')
+_pf_annuale  = sum(1 for _r in D['giornalieri'] if _r['esito'] == 'Sottoscritto' and _cr_lookup.get((_r['fb'], _r['cliente'], _r['tipoPol']), {}).get('stato') == 'Processata' and _r['frazionamento'] == 'Annuale')
+_pf_tot_pf   = sum(_r['premioFirma'] for _r in D['giornalieri'] if _r['esito'] == 'Sottoscritto' and _cr_lookup.get((_r['fb'], _r['cliente'], _r['tipoPol']), {}).get('stato') == 'Processata')
+_pf_med      = round(_pf_tot_pf / max(pf_proc, 1))
+pf_mensile   = _pf_mensile
+pf_annuale   = _pf_annuale
+pf_med       = fe(_pf_med)
+
 CSS = """
 :root{--navy:#0B1E3D;--n2:#142952;--n3:#1E3A6E;--gold:#C8A951;--g2:#E8CC7A;--cream:#FAF6EE;--w:#fff;--gr:#2E8B5F;--gr2:#3BA870;--red:#C0392B;--amb:#D97706;--mut:#64748B;--brd:rgba(200,169,81,.2);--sh:0 2px 14px rgba(11,30,61,.07);--sh2:0 6px 28px rgba(11,30,61,.13)}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1364,6 +1460,7 @@ HTML = f"""<!DOCTYPE html>
     <button class="nb" onclick="showSec('obj')">&#x1F4C8; Obiettivi</button>
     <button class="nb" onclick="showSec('ch')">&#x1F3C6; Challenge</button>
     <button class="nb" onclick="showSec('az')">Azioni Correttive</button>
+    <button class="nb" onclick="showSec('pf')">&#x1F4C1; Portafoglio</button>
     <span style="color:rgba(255,255,255,.35);font-size:.62rem;letter-spacing:.05em;white-space:nowrap;margin-left:4px">Agg. {oggi}</span>
   </nav>
 </header>
@@ -1485,7 +1582,7 @@ HTML = f"""<!DOCTYPE html>
   <p class="ss">Polizze, premi e incassati mese per mese</p>
   <div class="g4">{tsum}</div>
   <div class="g2">
-    <div class="chw"><h3>&#x1F4B6; Premio Annuo Mensile &mdash; Team Totale</h3>{SVG_PA}</div>
+    <div class="chw"><h3>&#x1F4B6; Premio alla Firma Mensile &mdash; Team Totale</h3>{SVG_PA}</div>
     <div class="chw"><h3>&#x2705; Premi Incassati Mensili &mdash; Team Totale</h3>{SVG_PI}</div>
   </div>
   <div class="trw"><p class="trt">&#x1F4CB; Polizze Sottoscritte per Family Banker per Mese</p>
@@ -1509,6 +1606,122 @@ HTML = f"""<!DOCTYPE html>
       <tbody>{piano_rows}</tbody></table></div>
   </div>
 </section>
+
+<section class="sec" id="s-pf">
+  <p class="st">&#x1F4C1; Portafoglio Clienti</p>
+  <p class="ss">Tutte le polizze sottoscritte YTD &middot; Data sottoscrizione e data incasso</p>
+
+  <!-- Summary cards -->
+  <div class="g4" style="margin-bottom:8px">
+    <div class="card green">
+      <div class="cico">&#x2705;</div>
+      <p class="cl">Processate</p>
+      <p class="cv">{pf_proc}</p>
+      <p class="csub">Incasso completato</p>
+    </div>
+    <div class="card amb">
+      <div class="cico">&#x23F3;</div>
+      <p class="cl">In Lavorazione</p>
+      <p class="cv">{pf_lav}</p>
+      <p class="csub">In attesa di assunzione</p>
+    </div>
+    <div class="card red">
+      <div class="cico">&#x274C;</div>
+      <p class="cl">Annullate</p>
+      <p class="cv">{pf_ann}</p>
+      <p class="csub">Non assunte dalla compagnia</p>
+    </div>
+  </div>
+  <div class="g4" style="margin-bottom:16px">
+    <div class="card">
+      <div class="cico">&#x1F4C5;</div>
+      <p class="cl">Polizze a Pagamento Mensile</p>
+      <p class="cv">{pf_mensile}</p>
+      <p class="csub">Frazionamento mensile</p>
+    </div>
+    <div class="card">
+      <div class="cico">&#x1F4B0;</div>
+      <p class="cl">Polizze a Pagamento Annuale</p>
+      <p class="cv">{pf_annuale}</p>
+      <p class="csub">Versamento unico</p>
+    </div>
+    <div class="card gold">
+      <div class="cico">&#x1F4CA;</div>
+      <p class="cl">Premio Medio per Polizza</p>
+      <p class="cv">{pf_med}</p>
+      <p class="csub">Solo polizze processate</p>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+    <input type="text" id="pf-search" placeholder="&#x1F50D; Cerca FB o cliente..." oninput="filterPF()"
+      style="padding:7px 12px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.8rem;background:var(--cream);color:var(--navy);min-width:220px">
+    <select id="pf-stato" onchange="filterPF()"
+      style="padding:7px 12px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.8rem;background:var(--cream);color:var(--navy)">
+      <option value="">Tutti gli stati</option>
+      <option value="Processata">&#x2713; Processata</option>
+      <option value="In lavorazione">&#x23F3; In lavorazione</option>
+      <option value="Annullata">&#x274C; Annullata</option>
+    </select>
+    <select id="pf-fb" onchange="filterPF()"
+      style="padding:7px 12px;border:1px solid var(--brd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:.8rem;background:var(--cream);color:var(--navy)">
+      <option value="">Tutti i FB</option>
+    </select>
+    <span id="pf-count" style="font-size:.75rem;color:var(--mut);margin-left:4px"></span>
+  </div>
+
+  <div style="overflow-x:auto">
+    <table id="pf-table">
+      <thead><tr>
+        <th>Family Banker</th>
+        <th>Cliente</th>
+        <th>Prodotto</th>
+        <th>Frazionamento</th>
+        <th>Premio<br>alla Firma</th>
+        <th>Data<br>Sottoscrizione</th>
+        <th>Data<br>Incasso</th>
+        <th>Stato</th>
+      </tr></thead>
+      <tbody id="pf-tbody">{pf_rows}</tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+(function(){{
+  // Populate FB filter
+  var rows = document.querySelectorAll('#pf-tbody tr');
+  var fbs = new Set();
+  rows.forEach(function(r){{ var td = r.querySelector('td'); if(td) fbs.add(td.textContent.trim()); }});
+  var sel = document.getElementById('pf-fb');
+  if(sel) fbs.forEach(function(fb){{ var o=document.createElement('option'); o.value=fb; o.textContent=fb; sel.appendChild(o); }});
+  updatePFcount();
+}})();
+
+function filterPF(){{
+  var q     = (document.getElementById('pf-search').value||'').toLowerCase();
+  var stato = (document.getElementById('pf-stato').value||'').toLowerCase();
+  var fb    = (document.getElementById('pf-fb').value||'').toLowerCase();
+  var rows  = document.querySelectorAll('#pf-tbody tr');
+  rows.forEach(function(r){{
+    var txt = r.textContent.toLowerCase();
+    var show = (!q || txt.includes(q)) &&
+               (!stato || txt.includes(stato)) &&
+               (!fb || r.querySelector('td').textContent.trim().toLowerCase() === fb);
+    r.style.display = show ? '' : 'none';
+  }});
+  updatePFcount();
+}}
+function updatePFcount(){{
+  var vis = document.querySelectorAll('#pf-tbody tr:not([style*="none"])').length;
+  var tot = document.querySelectorAll('#pf-tbody tr').length;
+  var el  = document.getElementById('pf-count');
+  if(el) el.textContent = vis + ' di ' + tot + ' polizze';
+}}
+</script>
+
+
 
 <section class="sec" id="s-obj">
   <p class="st">&#x1F4C8; Obiettivi Settimanali 2026</p>
